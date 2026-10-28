@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+  <header class="hero">
+    <h1>AI-Powered Circular Economy Product Passport</h1>
+    <p>Explore product sustainability information, circularity indicators, and AI-powered explanations.</p>
+  </header>
+
+  <section class="search-panel">
+    <h2>Find a product</h2>
+    <form>
+      <input type="text" placeholder="Enter product ID or QR reference" aria-label="Product ID">
+      <button type="submit">Search</button>
+    </form>
+  </section>
+
+  <section class="passport-grid">
+    <div class="card">
+      <h3>Product summary</h3>
+      <p><strong>Model:</strong> EcoBook Pro</p>
+      <p><strong>Category:</strong> Laptop</p>
+      <p><strong>Brand:</strong> Example Brand</p>
+    </div>
+
+    <div class="card">
+      <h3>Circularity score</h3>
+      <div class="score">78</div>
+      <p>Material Inputs: 82</p>
+      <p>Design & Durability: 74</p>
+      <p>End-of-Life Recovery: 80</p>
+    </div>
+
+    <div class="card">
+      <h3>AI Sustainability Coach</h3>
+      <p>Ask about repairability, recycled materials, or product lifetime.</p>
+      <button type="button">Ask AI</button>
+    </div>
+  </section>
+</div>
+{% endblock %}
