@@ -1,41 +1,119 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
+
+{% block title %}Search products{% endblock %}
 
 {% block content %}
-<div class="container">
-  <header class="hero">
-    <h1>AI-Powered Circular Economy Product Passport</h1>
-    <p>Explore product sustainability information, circularity indicators, and AI-powered explanations.</p>
-  </header>
+<section class="hero">
+  <div class="hero-copy">
+    <span class="eyebrow">Product model passports</span>
+    <h1>Explore product sustainability data</h1>
+    <p>Find a laptop or smartphone, review its example indicators, and see how a transparent passport could work.</p>
+    <a class="button button-light" href="#product-search">Find a product <span aria-hidden="true">↓</span></a>
+  </div>
+  <div class="hero-art" aria-hidden="true">
+    <span class="orbit orbit-one"></span>
+    <span class="orbit orbit-two"></span>
+    <span class="hero-symbol">↻</span>
+    <span class="hero-leaf">✳</span>
+  </div>
+</section>
 
-  <section class="search-panel">
-    <h2>Find a product</h2>
-    <form>
-      <input type="text" placeholder="Enter product ID or QR reference" aria-label="Product ID">
-      <button type="submit">Search</button>
-    </form>
-  </section>
-
-  <section class="passport-grid">
-    <div class="card">
-      <h3>Product summary</h3>
-      <p><strong>Model:</strong> EcoBook Pro</p>
-      <p><strong>Category:</strong> Laptop</p>
-      <p><strong>Brand:</strong> Example Brand</p>
+<section class="content-section" id="product-search">
+  <div class="section-heading">
+    <div>
+      <span class="eyebrow">Start exploring</span>
+      <h2>Find a product passport</h2>
     </div>
+    <span class="data-badge">Synthetic demo catalogue</span>
+  </div>
 
-    <div class="card">
-      <h3>Circularity score</h3>
-      <div class="score">78</div>
-      <p>Material Inputs: 82</p>
-      <p>Design & Durability: 74</p>
-      <p>End-of-Life Recovery: 80</p>
-    </div>
+  <div class="entry-grid">
+    <section class="panel scanner-panel" aria-labelledby="scanner-title">
+      <div class="panel-heading">
+        <span class="panel-icon" aria-hidden="true">▦</span>
+        <div>
+          <h3 id="scanner-title">Scan a QR code</h3>
+          <p>Allow camera access to scan a product passport link.</p>
+        </div>
+      </div>
+      <div class="camera-frame" id="camera-frame">
+        <video id="camera-video" playsinline muted aria-label="Live QR scanner camera preview" hidden></video>
+        <div class="camera-placeholder" id="camera-placeholder">
+          <span class="camera-qr" aria-hidden="true">▦</span>
+          <p>Your camera stays on this device.</p>
+        </div>
+      </div>
+      <p class="form-message" id="scanner-status" role="status" aria-live="polite">
+        Camera starts only after you select “Start camera”.
+      </p>
+      <div class="button-row">
+        <button class="button button-dark" id="start-camera" type="button">Start camera</button>
+        <button class="button button-secondary" id="stop-camera" type="button" disabled>Stop</button>
+      </div>
+      <p class="help-text">Camera scanning requires a supported browser and a secure connection (HTTPS or localhost).</p>
+    </section>
 
-    <div class="card">
-      <h3>AI Sustainability Coach</h3>
-      <p>Ask about repairability, recycled materials, or product lifetime.</p>
-      <button type="button">Ask AI</button>
+    <section class="panel" aria-labelledby="search-title">
+      <div class="panel-heading">
+        <span class="panel-icon panel-icon-blue" aria-hidden="true">⌕</span>
+        <div>
+          <h3 id="search-title">Search by product ID</h3>
+          <p>Enter an identifier from the sample catalogue.</p>
+        </div>
+      </div>
+      <form class="search-form" action="{{ url_for('main.search') }}" method="get">
+        <label for="product-id">Product model identifier</label>
+        <div class="input-action">
+          <input id="product-id" name="product_id" value="{{ search_value or '' }}"
+                 placeholder="e.g. LAP-LOOP-14" autocomplete="off" required>
+          <button class="button button-primary" type="submit">Search <span aria-hidden="true">→</span></button>
+        </div>
+        {% if search_error %}
+          <p class="form-message error-message" role="alert">{{ search_error }}</p>
+        {% endif %}
+      </form>
+      <div class="sample-list">
+        <h4>Sample products</h4>
+        {% for product in products %}
+          <a class="sample-link" href="{{ url_for('main.product_passport', product_id=product.product_id) }}">
+            <span class="sample-device" aria-hidden="true">{{ "▰" if product.category == "Laptop" else "▯" }}</span>
+            <span class="sample-info">
+              <strong>{{ product.name }}</strong>
+              <small>{{ product.brand }} · {{ product.category }}</small>
+            </span>
+            <span class="sample-id">{{ product.product_id }}</span>
+            <span class="sample-arrow" aria-hidden="true">↗</span>
+          </a>
+        {% endfor %}
+      </div>
+    </section>
+  </div>
+</section>
+
+<section class="content-section">
+  <div class="section-heading">
+    <div>
+      <span class="eyebrow">Inside the passport</span>
+      <h2>One view, three circularity dimensions</h2>
     </div>
-  </section>
-</div>
+    <a class="text-link" href="{{ url_for('main.analytics') }}">Explore demo analytics <span aria-hidden="true">→</span></a>
+  </div>
+  <div class="feature-grid">
+    <article class="feature-card">
+      <span class="feature-number">01</span>
+      <h3>Material inputs</h3>
+      <p>Review example material and resource indicators alongside their source notes.</p>
+    </article>
+    <article class="feature-card">
+      <span class="feature-number">02</span>
+      <h3>Design &amp; durability</h3>
+      <p>Explore example repairability, spare-parts, and product-lifetime information.</p>
+    </article>
+    <article class="feature-card">
+      <span class="feature-number">03</span>
+      <h3>End-of-life recovery</h3>
+      <p>See how reuse, recyclability, and unavailable information can be presented.</p>
+    </article>
+  </div>
+</section>
 {% endblock %}
