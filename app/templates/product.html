@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}{{ product.name }}{% endblock %}
+
+{% block content %}
+<div class="page-title-row">
+  <div>
+    <a class="back-link" href="{{ url_for('main.index') }}">← Search catalogue</a>
+    <span class="eyebrow">Product model passport</span>
+    <h1>{{ product.name }}</h1>
+    <p class="muted">{{ product.brand }} · {{ product.category }} · Model year {{ product.release_year }}</p>
+  </div>
+  <span class="data-badge">Synthetic demo record</span>
+</div>
+
+<section class="passport-overview">
+  <div class="passport-summary panel">
+    <div class="product-mark" aria-hidden="true">{{ "▰" if product.category == "Laptop" else "▯" }}</div>
+    <div>
+      <span class="eyebrow">Product identifier</span>
+      <p class="product-id">{{ product.product_id }}</p>
+      <p>{{ product.description }}</p>
+      <a class="button button-secondary" href="{{ url_for('main.coach', product_id=product.product_id) }}">Ask the demo coach <span aria-hidden="true">→</span></a>
+    </div>
+  </div>
+  <aside class="qr-card panel">
+    <img src="{{ qr_url }}" alt="QR code linking to {{ product.name }}'s passport">
+    <div>
+      <h2>Passport QR link</h2>
+      <p>Scan to open this product record. The QR contains a link, not the passport data.</p>
+    </div>
+  </aside>
+</section>
+
+<section class="score-panel">
+  <div class="score-main">
+    <span class="eyebrow">Circularity assessment</span>
+    <div class="score-value">{{ "%.1f"|format(product.score) }}<span>/100</span></div>
+    <span class="data-badge badge-light">Illustrative demo score</span>
+    <p>Preview values only. Final scoring methodology and missing-data policy are still to be agreed.</p>
+  </div>
+  <div class="score-breakdown">
+    {% for dimension in dimensions %}
+      {% set value = product.scores[dimension] %}
+      <div class="score-row">
+        <div class="score-row-label">
+          <span>{{ dimension }}</span>
+          <strong>{{ "%.1f"|format(value) }}</strong>
+        </div>
+        <div class="score-track" role="img" aria-label="{{ dimension }} illustrative score: {{ value }} out of 100">
+          <span style="width: {{ value }}%"></span>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="content-section">
+  <div class="section-heading">
+    <div>
+      <span class="eyebrow">Available information</span>
+      <h2>Indicators &amp; source notes</h2>
+    </div>
+    <div class="carbon-card">
+      <small>Carbon footprint example</small>
+      <strong>{{ product.carbon_footprint }} kg CO₂e</strong>
+      <span>Synthetic value · shown separately from score</span>
+    </div>
+  </div>
+  <div class="indicator-grid">
+    {% for dimension in dimensions %}
+      <section class="panel indicator-panel">
+        <div class="indicator-heading">
+          <span class="dimension-dot dot-{{ loop.index }}" aria-hidden="true"></span>
+          <h3>{{ dimension }}</h3>
+        </div>
+        {% for indicator in product.indicators[dimension] %}
+          <article class="indicator-item">
+            <div>
+              <strong>{{ indicator.name }}</strong>
+              <small>Source: {{ indicator.source }}</small>
+            </div>
+            {% if indicator.value == "Unavailable" %}
+              <span class="indicator-value missing">N/A</span>
+            {% else %}
+              <span class="indicator-value">{{ indicator.value }}</span>
+            {% endif %}
+          </article>
+        {% else %}
+          <p class="muted">No indicators are available in this category.</p>
+        {% endfor %}
+      </section>
+    {% endfor %}
+  </div>
+  <aside class="policy-note">
+    <span aria-hidden="true">ⓘ</span>
+    <p><strong>Missing-data note:</strong> “N/A” means the example has no value. It is not a measured zero. These demo scores are placeholders and do not implement the final project scoring policy.</p>
+  </aside>
+</section>
+{% endblock %}
