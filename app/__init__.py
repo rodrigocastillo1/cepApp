@@ -4,7 +4,7 @@ from pathlib import Path
 from flask import Flask
 from dotenv import load_dotenv
 
-from .database import get_database_path, initialize_database
+from modules.product_data.database import get_database_path, initialize_database
 
 
 def create_app() -> Flask:

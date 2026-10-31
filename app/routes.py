@@ -7,7 +7,7 @@ from qrcode.image.svg import SvgPathImage
 from flask import Blueprint, abort, current_app, redirect, render_template, request, url_for
 
 from .demo_catalog import DIMENSIONS
-from .repository import ProductRepository
+from modules.product_data.product_repository import ProductRepository
 
 main = Blueprint("main", __name__)
 
