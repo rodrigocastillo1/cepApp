@@ -80,7 +80,7 @@
               <strong>{{ indicator.name }}</strong>
               <small>Source: {{ indicator.source }}</small>
             </div>
-            {% if indicator.value == "Unavailable" %}
+            {% if indicator.value is none %}
               <span class="indicator-value missing">N/A</span>
             {% else %}
               <span class="indicator-value">{{ indicator.value }}</span>
