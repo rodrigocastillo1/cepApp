@@ -4,32 +4,39 @@ from io import BytesIO
 
 import qrcode
 from qrcode.image.svg import SvgPathImage
-from flask import Blueprint, abort, redirect, render_template, request, url_for
+from flask import Blueprint, abort, current_app, redirect, render_template, request, url_for
 
-from .demo_catalog import DEMO_PRODUCTS, DIMENSIONS, get_brand_analytics
+from .demo_catalog import DIMENSIONS
+from .repository import ProductRepository
 
 main = Blueprint("main", __name__)
 
 
+def get_repository() -> ProductRepository:
+    return ProductRepository(current_app.config["DATABASE"])
+
+
 @main.get("/")
 def index():
-    return render_template("index.html", products=DEMO_PRODUCTS.values())
+    return render_template("index.html", products=get_repository().list_products())
 
 
 @main.get("/search")
 def search():
+    repository = get_repository()
     product_id = request.args.get("product_id", "").strip()
     if not product_id:
         return render_template(
             "index.html",
-            products=DEMO_PRODUCTS.values(),
+            products=repository.list_products(),
             search_error="Enter a product ID to search.",
         ), 400
 
-    if product_id not in DEMO_PRODUCTS:
+    product = repository.get_product_by_id(product_id)
+    if product is None:
         return render_template(
             "index.html",
-            products=DEMO_PRODUCTS.values(),
+            products=repository.list_products(),
             search_error=f"No product was found for “{product_id}”. Try a sample ID below.",
             search_value=product_id,
         ), 404
@@ -39,7 +46,7 @@ def search():
 
 @main.get("/products/<product_id>")
 def product_passport(product_id: str):
-    product = DEMO_PRODUCTS.get(product_id)
+    product = get_repository().get_product_by_id(product_id)
     if product is None:
         abort(404)
     return render_template(
@@ -52,7 +59,7 @@ def product_passport(product_id: str):
 
 @main.get("/products/<product_id>/qr.svg")
 def product_qr(product_id: str):
-    if product_id not in DEMO_PRODUCTS:
+    if get_repository().get_product_by_id(product_id) is None:
         abort(404)
 
     passport_url = url_for(
@@ -71,16 +78,18 @@ def product_qr(product_id: str):
 
 @main.get("/analytics")
 def analytics():
+    repository = get_repository()
+    products = repository.list_products()
     return render_template(
         "analytics.html",
-        products=DEMO_PRODUCTS.values(),
-        brands=get_brand_analytics(),
+        products=products,
+        brands=repository.get_brand_analytics(),
     )
 
 
 @main.route("/products/<product_id>/coach", methods=["GET", "POST"])
 def coach(product_id: str):
-    product = DEMO_PRODUCTS.get(product_id)
+    product = get_repository().get_product_by_id(product_id)
     if product is None:
         abort(404)
 
