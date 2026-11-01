@@ -2,7 +2,8 @@
 
 import sqlite3
 
-from app.demo_catalog import DEMO_PRODUCTS, DIMENSIONS
+from app.demo_catalog import DEMO_PRODUCTS
+from modules.circularity.methodology import DEFAULT_METHODOLOGY
 
 
 def seed_demo_products(connection: sqlite3.Connection) -> None:
@@ -11,8 +12,8 @@ def seed_demo_products(connection: sqlite3.Connection) -> None:
             """
             INSERT OR REPLACE INTO products (
                 product_id, name, brand, category, release_year, description,
-                is_demo, carbon_footprint, score
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                is_demo, carbon_footprint
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 product["product_id"],
@@ -27,22 +28,10 @@ def seed_demo_products(connection: sqlite3.Connection) -> None:
                     if product.get("carbon_footprint") is not None
                     else None
                 ),
-                float(product["score"]),
             ),
         )
 
-        for dimension in DIMENSIONS:
-            score = product["scores"].get(dimension)
-            if score is not None:
-                connection.execute(
-                    """
-                    INSERT OR REPLACE INTO product_scores (
-                        product_id, dimension_name, score
-                    ) VALUES (?, ?, ?)
-                    """,
-                    (product_id, dimension, float(score)),
-                )
-
+        for dimension in DEFAULT_METHODOLOGY.dimensions:
             for index, indicator in enumerate(product.get("indicators", {}).get(dimension, [])):
                 indicator_name = indicator.get("name")
                 if not indicator_name:

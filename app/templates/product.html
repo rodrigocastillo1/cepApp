@@ -35,21 +35,33 @@
 <section class="score-panel">
   <div class="score-main">
     <span class="eyebrow">Circularity assessment</span>
-    <div class="score-value">{{ "%.1f"|format(product.score) }}<span>/100</span></div>
-    <span class="data-badge badge-light">Illustrative demo score</span>
-    <p>Preview values only. Final scoring methodology and missing-data policy are still to be agreed.</p>
+    {% if assessment.overall_score is not none %}
+      <div class="score-value">{{ "%.1f"|format(assessment.overall_score) }}<span>/100</span></div>
+    {% else %}
+      <div class="score-value">N/A</div>
+    {% endif %}
+    <span class="data-badge badge-light">Project-defined prototype score</span>
+    <p>Calculated from the available indicator data. Coverage: {{ "%.0f"|format(assessment.coverage * 100) }}% of dimensions.</p>
   </div>
   <div class="score-breakdown">
-    {% for dimension in dimensions %}
-      {% set value = product.scores[dimension] %}
+    {% for component in assessment.components %}
       <div class="score-row">
         <div class="score-row-label">
-          <span>{{ dimension }}</span>
-          <strong>{{ "%.1f"|format(value) }}</strong>
+          <span>{{ component.dimension }}</span>
+          {% if component.score is not none %}
+            <strong>{{ "%.1f"|format(component.score) }}</strong>
+          {% else %}
+            <strong>N/A</strong>
+          {% endif %}
         </div>
-        <div class="score-track" role="img" aria-label="{{ dimension }} illustrative score: {{ value }} out of 100">
-          <span style="width: {{ value }}%"></span>
+        <div class="score-track" role="img" aria-label="{{ component.dimension }} score">
+          {% if component.score is not none %}
+            <span style="width: {{ component.score }}%"></span>
+          {% else %}
+            <span style="width: 0%"></span>
+          {% endif %}
         </div>
+        <small>Data coverage: {{ component.used_indicators|length }} / {{ component.total_indicators }} indicators</small>
       </div>
     {% endfor %}
   </div>
@@ -94,7 +106,7 @@
   </div>
   <aside class="policy-note">
     <span aria-hidden="true">ⓘ</span>
-    <p><strong>Missing-data note:</strong> “N/A” means the example has no value. It is not a measured zero. These demo scores are placeholders and do not implement the final project scoring policy.</p>
+    <p><strong>Scoring note:</strong> {{ assessment.missing_data_note }} This is an educational prototype score, not an official certification or EU score.</p>
   </aside>
 </section>
 {% endblock %}

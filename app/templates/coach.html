@@ -18,7 +18,14 @@
     <span class="eyebrow">Selected product</span>
     <h2>{{ product.name }}</h2>
     <p>{{ product.brand }} · {{ product.category }}</p>
-    <div class="context-score"><span>Illustrative score</span><strong>{{ "%.1f"|format(product.score) }} / 100</strong></div>
+    <div class="context-score">
+      <span>Project-defined prototype score</span>
+      {% if assessment.overall_score is not none %}
+        <strong>{{ "%.1f"|format(assessment.overall_score) }} / 100</strong>
+      {% else %}
+        <strong>N/A</strong>
+      {% endif %}
+    </div>
     <h3>Example evidence available</h3>
     <ul>
       {% for dimension, items in product.indicators.items() %}
