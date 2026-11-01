@@ -45,21 +45,26 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   const openScannedPassport = (value) => {
-    let scannedUrl;
-    try {
-      scannedUrl = new URL(value, window.location.origin);
-    } catch {
-      stopScanner("That QR code does not contain a valid link. Try again or search by product ID.");
-      return;
+    const scannedValue = value.trim();
+    let productId = scannedValue;
+    if (!/^[A-Za-z0-9_-]+$/.test(scannedValue)) {
+      try {
+        const scannedUrl = new URL(scannedValue, window.location.origin);
+        const productPath = scannedUrl.pathname.match(
+          /^\/products\/([A-Za-z0-9_-]+)\/?$/,
+        );
+        if (productPath) productId = productPath[1];
+      } catch {
+        // Treat non-URL content as a product ID; Flask will show 404 if unknown.
+      }
     }
 
-    const productPath = /^\/products\/[A-Za-z0-9_-]+\/?$/.test(scannedUrl.pathname);
-    if (scannedUrl.origin !== window.location.origin || !productPath) {
-      stopScanner("That QR code is not a product passport link for this application.");
-      return;
-    }
-    stopScanner("Product found. Opening its passport…");
-    window.location.assign(scannedUrl.href);
+    const passportUrl = new URL(
+      `/products/${encodeURIComponent(productId)}`,
+      window.location.origin,
+    );
+    stopScanner("Opening product passport…");
+    window.location.assign(passportUrl.href);
   };
 
   const stopScanner = (message) => {
