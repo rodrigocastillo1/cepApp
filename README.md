@@ -26,8 +26,20 @@ An AI-powered web app for exploring electronics product passports, evaluating ci
    ```bash
    python -m app.app
    ```
-5. Open the app in your browser:
+6. Open the app in your browser:
    ```text
    http://127.0.0.1:5000
    ```
 
+### Generate demo QR codes
+
+From the project root, run:
+```bash
+python -m tools.generate_demo_qr_codes
+```
+
+The utility saves one SVG per demo product to `data/demo_qr_codes/`. Choose a
+different output directory with:
+```bash
+python -m tools.generate_demo_qr_codes --output-dir path\to\qr-codes
+```
