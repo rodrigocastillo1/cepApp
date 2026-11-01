@@ -1,11 +1,5 @@
 """Synthetic product records used to seed the SQLite-backed catalogue."""
 
-DIMENSIONS = (
-    "Material Inputs",
-    "Design & Durability",
-    "End-of-Life Recovery",
-)
-
 DEMO_PRODUCTS = {
     "LAP-LOOP-14": {
         "product_id": "LAP-LOOP-14",
@@ -16,12 +10,6 @@ DEMO_PRODUCTS = {
         "description": "Illustrative laptop record for previewing the product passport.",
         "demo": True,
         "carbon_footprint": 185,
-        "score": 82.5,
-        "scores": {
-            "Material Inputs": 80.0,
-            "Design & Durability": 85.0,
-            "End-of-Life Recovery": 81.0,
-        },
         "indicators": {
             "Material Inputs": [
                 {"name": "Recycled aluminum content", "value": "75%", "source": "Synthetic example"},
@@ -49,12 +37,6 @@ DEMO_PRODUCTS = {
         "description": "Illustrative smartphone record for previewing the product passport.",
         "demo": True,
         "carbon_footprint": 142,
-        "score": 84.5,
-        "scores": {
-            "Material Inputs": 88.0,
-            "Design & Durability": 78.0,
-            "End-of-Life Recovery": 89.0,
-        },
         "indicators": {
             "Material Inputs": [
                 {"name": "Recycled battery material", "value": "70%", "source": "Synthetic example"},
@@ -78,12 +60,6 @@ DEMO_PRODUCTS = {
         "description": "Illustrative laptop record with a focus on repair and long-term use.",
         "demo": True,
         "carbon_footprint": 195,
-        "score": 79.0,
-        "scores": {
-            "Material Inputs": 75.0,
-            "Design & Durability": 88.0,
-            "End-of-Life Recovery": 74.0,
-        },
         "indicators": {
             "Material Inputs": [
                 {"name": "Recycled casing material", "value": "50%", "source": "Synthetic example"},
@@ -106,12 +82,6 @@ DEMO_PRODUCTS = {
         "description": "Illustrative smartphone record for the responsive catalogue preview.",
         "demo": True,
         "carbon_footprint": 115,
-        "score": 77.2,
-        "scores": {
-            "Material Inputs": 78.0,
-            "Design & Durability": 72.0,
-            "End-of-Life Recovery": 82.0,
-        },
         "indicators": {
             "Material Inputs": [
                 {"name": "Recycled plastic components", "value": "20%", "source": "Synthetic example"},
@@ -129,23 +99,3 @@ DEMO_PRODUCTS = {
 
 def list_demo_products():
     return [DEMO_PRODUCTS[product_id] for product_id in sorted(DEMO_PRODUCTS)]
-
-
-def get_brand_analytics(products=None):
-    """Return preview-only aggregates from the synthetic catalogue."""
-    catalogue = list(products or DEMO_PRODUCTS.values())
-    grouped = {}
-    for product in catalogue:
-        brand = grouped.setdefault(product["brand"], {"scores": [], "carbon": []})
-        brand["scores"].append(product["score"])
-        brand["carbon"].append(product["carbon_footprint"])
-
-    return [
-        {
-            "brand": brand,
-            "average_score": sum(values["scores"]) / len(values["scores"]),
-            "average_carbon": sum(values["carbon"]) / len(values["carbon"]),
-            "product_count": len(values["scores"]),
-        }
-        for brand, values in sorted(grouped.items())
-    ]

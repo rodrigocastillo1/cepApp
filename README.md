@@ -3,6 +3,10 @@ An AI-powered web app for exploring electronics product passports, evaluating ci
 
 ## How to run the app locally
 
+For an explanation of the current indicator normalization rules, score
+calculation, and coverage, see
+[Circularity Score Calculation](./CIRCULARITY_METHODOLOGY.md).
+
 1. Open a terminal in the project folder.
 2. Create a virtual environment (optional but recommended):
    ```bash

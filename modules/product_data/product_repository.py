@@ -35,11 +35,6 @@ class ProductRepository:
             if product_row is None:
                 return None
 
-            scores_rows = connection.execute(
-                "SELECT dimension_name, score FROM product_scores WHERE product_id = ?",
-                (product_id,),
-            ).fetchall()
-
             indicator_rows = connection.execute(
                 """
                 SELECT
@@ -63,11 +58,7 @@ class ProductRepository:
                 (product_id,),
             ).fetchall()
 
-        scores: dict[str, float] = {}
         indicators: dict[str, list[Indicator]] = {}
-
-        for row in scores_rows:
-            scores[row["dimension_name"]] = float(row["score"])
 
         for row in indicator_rows:
             source_reference = SourceReference(
@@ -95,8 +86,6 @@ class ProductRepository:
             description=product_row["description"],
             is_demo=bool(product_row["is_demo"]),
             carbon_footprint=product_row["carbon_footprint"],
-            score=float(product_row["score"]),
-            scores=scores,
             indicators=indicators,
         )
 
@@ -121,28 +110,3 @@ class ProductRepository:
             if product is not None:
                 products.append(product)
         return products
-
-    def get_brand_analytics(self) -> list[dict]:
-        products = self.list_products()
-        grouped: dict[str, dict[str, list[float]]] = {}
-
-        for product in products:
-            brand = product.brand
-            bucket = grouped.setdefault(brand, {"scores": [], "carbon": []})
-            bucket["scores"].append(product.score)
-            if product.carbon_footprint is not None:
-                bucket["carbon"].append(float(product.carbon_footprint))
-
-        analytics = []
-        for brand, values in sorted(grouped.items()):
-            scores = values["scores"]
-            carbon = values["carbon"]
-            analytics.append(
-                {
-                    "brand": brand,
-                    "average_score": sum(scores) / len(scores),
-                    "average_carbon": sum(carbon) / len(carbon) if carbon else None,
-                    "product_count": len(scores),
-                }
-            )
-        return analytics

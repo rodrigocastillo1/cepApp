@@ -6,10 +6,12 @@ import qrcode
 from qrcode.image.svg import SvgPathImage
 from flask import Blueprint, abort, current_app, redirect, render_template, request, url_for
 
-from .demo_catalog import DIMENSIONS
+from modules.analytics.service import AnalyticsService
+from modules.circularity.scoring import CircularityScorer
 from modules.product_data.product_repository import ProductRepository
 
 main = Blueprint("main", __name__)
+circularity_scorer = CircularityScorer()
 
 
 def get_repository() -> ProductRepository:
@@ -52,7 +54,8 @@ def product_passport(product_id: str):
     return render_template(
         "product.html",
         product=product,
-        dimensions=DIMENSIONS,
+        dimensions=circularity_scorer.methodology.dimensions,
+        assessment=circularity_scorer.calculate(product),
         qr_url=url_for("main.product_qr", product_id=product_id),
     )
 
@@ -83,7 +86,8 @@ def analytics():
     return render_template(
         "analytics.html",
         products=products,
-        brands=repository.get_brand_analytics(),
+        brands=AnalyticsService(circularity_scorer).get_brand_analytics(products),
+        scorer=circularity_scorer,
     )
 
 
@@ -93,6 +97,7 @@ def coach(product_id: str):
     if product is None:
         abort(404)
 
+    assessment = circularity_scorer.calculate(product)
     question = ""
     answer = None
     error = None
@@ -114,6 +119,7 @@ def coach(product_id: str):
     return render_template(
         "coach.html",
         product=product,
+        assessment=assessment,
         question=question,
         answer=answer,
         error=error,

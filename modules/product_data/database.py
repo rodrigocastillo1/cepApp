@@ -39,22 +39,11 @@ def initialize_database(database_path: str | Path | None = None) -> Path:
                 release_year INTEGER NOT NULL,
                 description TEXT NOT NULL,
                 is_demo INTEGER NOT NULL DEFAULT 1,
-                carbon_footprint INTEGER,
-                score REAL NOT NULL
+                carbon_footprint INTEGER
             )
             """
         )
-        connection.execute(
-            """
-            CREATE TABLE IF NOT EXISTS product_scores (
-                product_id TEXT NOT NULL,
-                dimension_name TEXT NOT NULL,
-                score REAL NOT NULL,
-                PRIMARY KEY (product_id, dimension_name),
-                FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE CASCADE
-            )
-            """
-        )
+        _remove_legacy_score_storage(connection)
         connection.execute(
             """
             CREATE TABLE IF NOT EXISTS product_indicators (
@@ -88,3 +77,51 @@ def initialize_database(database_path: str | Path | None = None) -> Path:
         seed_demo_products(connection)
 
     return path
+
+
+def _remove_legacy_score_storage(connection: sqlite3.Connection) -> None:
+    product_columns = {
+        row["name"] for row in connection.execute("PRAGMA table_info(products)")
+    }
+    if "score" in product_columns:
+        connection.execute("PRAGMA foreign_keys = OFF")
+        try:
+            connection.execute("BEGIN IMMEDIATE")
+            connection.execute(
+                """
+                CREATE TABLE products_without_scores (
+                    product_id TEXT PRIMARY KEY,
+                    name TEXT NOT NULL,
+                    brand TEXT NOT NULL,
+                    category TEXT NOT NULL,
+                    release_year INTEGER NOT NULL,
+                    description TEXT NOT NULL,
+                    is_demo INTEGER NOT NULL DEFAULT 1,
+                    carbon_footprint INTEGER
+                )
+                """
+            )
+            connection.execute(
+                """
+                INSERT INTO products_without_scores (
+                    product_id, name, brand, category, release_year,
+                    description, is_demo, carbon_footprint
+                )
+                SELECT product_id, name, brand, category, release_year,
+                       description, is_demo, carbon_footprint
+                FROM products
+                """
+            )
+            connection.execute("DROP TABLE IF EXISTS product_scores")
+            connection.execute("DROP TABLE products")
+            connection.execute(
+                "ALTER TABLE products_without_scores RENAME TO products"
+            )
+            connection.commit()
+        except Exception:
+            connection.rollback()
+            raise
+        finally:
+            connection.execute("PRAGMA foreign_keys = ON")
+    else:
+        connection.execute("DROP TABLE IF EXISTS product_scores")

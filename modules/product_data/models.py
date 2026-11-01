@@ -39,6 +39,4 @@ class Product:
     description: str
     is_demo: bool
     carbon_footprint: int | None
-    score: float
-    scores: dict[str, float] = field(default_factory=dict)
     indicators: dict[str, list[Indicator]] = field(default_factory=dict)
