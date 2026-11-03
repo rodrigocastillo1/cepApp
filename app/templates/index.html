@@ -74,17 +74,19 @@
       </form>
       <div class="sample-list">
         <h4>Sample products</h4>
-        {% for product in products %}
-          <a class="sample-link" href="{{ url_for('main.product_passport', product_id=product.product_id) }}">
-            <span class="sample-device" aria-hidden="true">{{ "▰" if product.category == "Laptop" else "▯" }}</span>
-            <span class="sample-info">
-              <strong>{{ product.name }}</strong>
-              <small>{{ product.brand }} · {{ product.category }}</small>
-            </span>
-            <span class="sample-id">{{ product.product_id }}</span>
-            <span class="sample-arrow" aria-hidden="true">↗</span>
-          </a>
-        {% endfor %}
+        <div class="sample-list-items" role="region" aria-label="Sample products" tabindex="0">
+          {% for product in products %}
+            <a class="sample-link" href="{{ url_for('main.product_passport', product_id=product.product_id) }}">
+              <span class="sample-device" aria-hidden="true">{{ "▰" if product.category == "Laptop" else "▯" }}</span>
+              <span class="sample-info">
+                <strong>{{ product.name }}</strong>
+                <small>{{ product.brand }} · {{ product.category }}</small>
+              </span>
+              <span class="sample-id">{{ product.product_id }}</span>
+              <span class="sample-arrow" aria-hidden="true">↗</span>
+            </a>
+          {% endfor %}
+        </div>
       </div>
     </section>
   </div>
