@@ -6,6 +6,8 @@ import qrcode
 from qrcode.image.svg import SvgPathImage
 from flask import Blueprint, abort, current_app, redirect, render_template, request, url_for
 
+from modules.ai.openai_provider import OpenAIProvider
+from modules.ai.provider import AIProvider, AIProviderError, AIProviderNotConfigured
 from modules.analytics.service import AnalyticsService
 from modules.circularity.scoring import CircularityScorer
 from modules.product_data.product_repository import ProductRepository
@@ -16,6 +18,16 @@ circularity_scorer = CircularityScorer()
 
 def get_repository() -> ProductRepository:
     return ProductRepository(current_app.config["DATABASE"])
+
+
+def get_ai_provider() -> AIProvider:
+    configured_provider = current_app.config.get("AI_PROVIDER")
+    if configured_provider is not None:
+        return configured_provider
+    return OpenAIProvider(
+        api_key=current_app.config.get("OPENAI_API_KEY"),
+        model=current_app.config["OPENAI_MODEL"],
+    )
 
 
 @main.get("/")
@@ -101,20 +113,36 @@ def coach(product_id: str):
     question = ""
     answer = None
     error = None
+    response_status = 200
+    ai_configured = (
+        current_app.config.get("AI_PROVIDER") is not None
+        or bool(current_app.config.get("OPENAI_API_KEY"))
+    )
     if request.method == "POST":
         question = request.form.get("question", "").strip()
         if not question:
             error = "Enter a question to continue."
+            response_status = 400
         elif len(question) > 500:
             error = "Keep your question under 500 characters."
+            response_status = 400
         else:
-            answer = (
-                "This is a demo response, not an AI-generated answer. "
-                "The example data for this product is synthetic and has not "
-                "been verified. Review the indicator values and their source "
-                "notes on the passport page; unavailable values should not be "
-                "interpreted as zero."
-            )
+            try:
+                answer = get_ai_provider().generate_answer(
+                    question,
+                    product,
+                    assessment,
+                )
+            except AIProviderNotConfigured:
+                error = "The AI coach is not configured. Set OPENAI_API_KEY on the server to enable it."
+                response_status = 503
+            except AIProviderError:
+                current_app.logger.exception(
+                    "AI coach provider failed for product %s",
+                    product.product_id,
+                )
+                error = "The AI coach is temporarily unavailable. Please try again later."
+                response_status = 502
 
     return render_template(
         "coach.html",
@@ -123,7 +151,8 @@ def coach(product_id: str):
         question=question,
         answer=answer,
         error=error,
-    ), 400 if error else 200
+        ai_configured=ai_configured,
+    ), response_status
 
 
 @main.app_errorhandler(404)
