@@ -11,11 +11,16 @@ def create_app() -> Flask:
     load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
     app = Flask(__name__)
-    secret_key = os.getenv("SECRET_KEY")
+    app.config.from_mapping(
+        DATABASE=str(get_database_path()),
+        OPENAI_API_KEY=os.getenv("OPENAI_API_KEY"),
+        OPENAI_MODEL=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
+    )
+
+    secret_key = app.config.get("SECRET_KEY") or os.getenv("SECRET_KEY")
     if not secret_key:
         raise RuntimeError("No SECRET_KEY found. Must be set in the environment or .env file.")
     app.config["SECRET_KEY"] = secret_key
-    app.config["DATABASE"] = str(get_database_path())
     initialize_database(app.config["DATABASE"])
 
     from .routes import main

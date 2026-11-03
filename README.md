@@ -21,11 +21,18 @@ calculation, and coverage, see
 4. Create a `.env` file in the project root and set a secret key:
    ```text
    SECRET_KEY=your-generated-secret-key
+   OPENAI_API_KEY=your-openai-api-key
+   OPENAI_MODEL=gpt-4o-mini
    ```
-   Keep this file local; it is ignored by Git. You can generate a key running the following command:
+   `OPENAI_API_KEY` enables the sustainability coach; `OPENAI_MODEL` is
+   optional and defaults to `gpt-4o-mini`. Keep `.env` local; it is ignored by
+   Git. You can generate a Flask secret key running the following command:
    ```bash
    python -c "import secrets; print(secrets.token_hex(32))"
    ```
+   Without an OpenAI API key, the coach shows a configuration error instead of
+   returning a mock answer. API usage may incur charges according to your
+   OpenAI account.
 5. Start the Flask app:
    ```bash
    python -m app.app
