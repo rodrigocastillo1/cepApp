@@ -1,7 +1,5 @@
 """Generate QR code image files for products in the demo catalogue."""
 
-from __future__ import annotations
-
 import argparse
 from io import BytesIO
 from pathlib import Path
