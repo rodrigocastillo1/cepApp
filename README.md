@@ -21,18 +21,21 @@ calculation, and coverage, see
 4. Create a `.env` file in the project root and set a secret key:
    ```text
    SECRET_KEY=your-generated-secret-key
+   AI_PROVIDER=openai
    OPENAI_API_KEY=your-openai-api-key
    OPENAI_MODEL=gpt-4o-mini
+   GEMINI_API_KEY=your-gemini-api-key
+   GEMINI_MODEL=gemini-flash-latest
    ```
-   `OPENAI_API_KEY` enables the sustainability coach; `OPENAI_MODEL` is
-   optional and defaults to `gpt-4o-mini`. Keep `.env` local; it is ignored by
-   Git. You can generate a Flask secret key running the following command:
+   Choose `AI_PROVIDER=openai` or `AI_PROVIDER=gemini`; only the selected
+   provider's API key is needed. The model settings are optional and default to
+   `gpt-4o-mini` and `gemini-3.5-flash-lite`, respectively. Keep `.env` local; it
+   is ignored by Git. You can generate a Flask secret key running the following command:
    ```bash
    python -c "import secrets; print(secrets.token_hex(32))"
    ```
-   Without an OpenAI API key, the coach shows a configuration error instead of
-   returning a mock answer. API usage may incur charges according to your
-   OpenAI account.
+   Without the selected provider's API key, the coach shows a configuration
+   error instead of returning a mock answer.
 5. Start the Flask app:
    ```bash
    python -m app.app

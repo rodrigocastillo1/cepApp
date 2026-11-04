@@ -6,6 +6,7 @@ import qrcode
 from qrcode.image.svg import SvgPathImage
 from flask import Blueprint, abort, current_app, redirect, render_template, request, url_for
 
+from modules.ai.gemini_provider import GeminiProvider
 from modules.ai.openai_provider import OpenAIProvider
 from modules.ai.provider import AIProvider, AIProviderError, AIProviderNotConfigured
 from modules.analytics.service import AnalyticsService
@@ -22,11 +23,21 @@ def get_repository() -> ProductRepository:
 
 def get_ai_provider() -> AIProvider:
     configured_provider = current_app.config.get("AI_PROVIDER")
-    if configured_provider is not None:
+    if configured_provider is not None and not isinstance(configured_provider, str):
         return configured_provider
-    return OpenAIProvider(
-        api_key=current_app.config.get("OPENAI_API_KEY"),
-        model=current_app.config["OPENAI_MODEL"],
+    provider_name = str(configured_provider or "openai").lower()
+    if provider_name == "openai":
+        return OpenAIProvider(
+            api_key=current_app.config.get("OPENAI_API_KEY"),
+            model=current_app.config["OPENAI_MODEL"],
+        )
+    if provider_name == "gemini":
+        return GeminiProvider(
+            api_key=current_app.config.get("GEMINI_API_KEY"),
+            model=current_app.config["GEMINI_MODEL"],
+        )
+    raise AIProviderNotConfigured(
+        "Set AI_PROVIDER to either 'openai' or 'gemini'."
     )
 
 
@@ -114,10 +125,13 @@ def coach(product_id: str):
     answer = None
     error = None
     response_status = 200
-    ai_configured = (
-        current_app.config.get("AI_PROVIDER") is not None
-        or bool(current_app.config.get("OPENAI_API_KEY"))
-    )
+    configured_provider = current_app.config.get("AI_PROVIDER")
+    if configured_provider is not None and not isinstance(configured_provider, str):
+        ai_configured = True
+    elif configured_provider == "gemini":
+        ai_configured = bool((current_app.config.get("GEMINI_API_KEY") or "").strip())
+    else:
+        ai_configured = bool((current_app.config.get("OPENAI_API_KEY") or "").strip())
     if request.method == "POST":
         question = request.form.get("question", "").strip()
         if not question:
@@ -134,7 +148,7 @@ def coach(product_id: str):
                     assessment,
                 )
             except AIProviderNotConfigured:
-                error = "The AI coach is not configured. Set OPENAI_API_KEY on the server to enable it."
+                error = "The AI coach is not configured. Check AI_PROVIDER and its API key in the server configuration."
                 response_status = 503
             except AIProviderError:
                 current_app.logger.exception(
