@@ -106,10 +106,14 @@ def product_qr(product_id: str):
 def analytics():
     repository = get_repository()
     products = repository.list_products()
+    analytics_service = AnalyticsService(circularity_scorer)
     return render_template(
         "analytics.html",
         products=products,
-        brands=AnalyticsService(circularity_scorer).get_brand_analytics(products),
+        brands=analytics_service.get_brand_analytics(products),
+        product_dimensions=analytics_service.get_product_dimension_analytics(products),
+        category_dimensions=analytics_service.get_category_dimension_analytics(products),
+        indicators=analytics_service.get_indicator_analytics(products),
         scorer=circularity_scorer,
     )
 

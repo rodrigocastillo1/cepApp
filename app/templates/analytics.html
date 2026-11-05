@@ -6,7 +6,7 @@
 <div class="page-title-row">
   <div>
     <span class="eyebrow">Catalogue overview</span>
-    <h1>Brand sustainability analytics</h1>
+    <h1>Circularity analytics</h1>
     <p class="muted">Aggregates calculated from the synthetic example catalogue.</p>
   </div>
   <span class="data-badge">Demo data · {{ products|length }} products</span>
@@ -30,8 +30,8 @@
   </article>
   <article class="kpi-card">
     <span>Assessment status</span>
-    <strong class="status-text">Preview</strong>
-    <small>Methodology pending</small>
+    <strong class="status-text">Prototype</strong>
+    <small>Project-defined methodology</small>
   </article>
 </div>
 
@@ -85,6 +85,136 @@
     {% endfor %}
     <p class="chart-note">Carbon values are synthetic examples and are not part of the Circularity Score.</p>
   </article>
+</section>
+
+<section class="content-section">
+  <div class="section-heading">
+    <div>
+      <span class="eyebrow">Product comparison</span>
+      <h2>Circularity dimensions by product</h2>
+      <p class="muted">Compare the calculated score for each dimension across products.</p>
+    </div>
+    <span class="chart-unit">Score / 100</span>
+  </div>
+  {% if product_dimensions %}
+    <div class="dimension-chart" role="list" aria-label="Dimension scores by product">
+      {% for product in product_dimensions %}
+        <article class="dimension-product" role="listitem">
+          <div class="dimension-product-heading">
+            <strong>{{ product.name }}</strong>
+            <small>{{ product.product_id }} · {{ product.category }}</small>
+          </div>
+          <div class="dimension-bars">
+            {% for dimension in product.dimensions %}
+              <div class="dimension-bar dimension-color-{{ loop.index }}">
+                <div class="bar-label">
+                  <span>{{ dimension.name }}</span>
+                  {% if dimension.score is not none %}
+                    <strong>{{ "%.1f"|format(dimension.score) }}</strong>
+                  {% else %}
+                    <strong>N/A</strong>
+                  {% endif %}
+                </div>
+                <div class="bar-track"
+                     role="img"
+                     aria-label="{{ product.name }}, {{ dimension.name }}: {{ ('%.1f'|format(dimension.score)) if dimension.score is not none else 'no score available' }}{% if dimension.score is not none %} out of 100{% endif %}">
+                  <span style="width: {{ dimension.score if dimension.score is not none else 0 }}%"></span>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="chart-note">No product data is available yet.</p>
+  {% endif %}
+  <p class="chart-note">Scores use the project-defined prototype methodology; missing or unsupported data is not scored as zero.</p>
+</section>
+
+<section class="content-section">
+  <div class="section-heading">
+    <div>
+      <span class="eyebrow">Category comparison</span>
+      <h2>Average dimension scores by category</h2>
+      <p class="muted">Each dimension average uses only products in that category with a calculated score.</p>
+    </div>
+    <span class="chart-unit">Score / 100</span>
+  </div>
+  {% if category_dimensions %}
+    <div class="category-chart">
+      {% for category in category_dimensions %}
+        <article class="panel category-card">
+          <div class="chart-heading">
+            <h3>{{ category.category }}</h3>
+            <span class="chart-unit">{{ category.product_count }} products</span>
+          </div>
+          {% for dimension in category.dimensions %}
+            <div class="dimension-bar dimension-color-{{ loop.index }}">
+              <div class="bar-label">
+                <span>{{ dimension.name }} <small>({{ dimension.product_count }} products)</small></span>
+                {% if dimension.average_score is not none %}
+                  <strong>{{ "%.1f"|format(dimension.average_score) }}</strong>
+                {% else %}
+                  <strong>N/A</strong>
+                {% endif %}
+              </div>
+              <div class="bar-track"
+                   role="img"
+                   aria-label="{{ category.category }}, average {{ dimension.name }} score: {{ ('%.1f'|format(dimension.average_score)) if dimension.average_score is not none else 'no score available' }}{% if dimension.average_score is not none %} out of 100{% endif %}">
+                <span style="width: {{ dimension.average_score if dimension.average_score is not none else 0 }}%"></span>
+              </div>
+            </div>
+          {% endfor %}
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="chart-note">No product data is available yet.</p>
+  {% endif %}
+</section>
+
+<section class="content-section">
+  <div class="section-heading">
+    <div>
+      <span class="eyebrow">Indicator details</span>
+      <h2>Values contributing to the scores</h2>
+      <p class="muted">Expand an indicator to compare its available values across products.</p>
+    </div>
+  </div>
+  {% if indicators %}
+    <div class="indicator-analytics">
+      {% for indicator in indicators %}
+        <details class="indicator-detail">
+          <summary>
+            <span>
+              <strong>{{ indicator.name }}</strong>
+              <small>{{ indicator.dimension }}</small>
+            </span>
+            <span class="chart-unit">{{ indicator.entries|length }} values</span>
+          </summary>
+          <div class="indicator-values">
+            {% for item in indicator.entries %}
+              <div class="indicator-value-row">
+                <div class="bar-label">
+                  <span>{{ item.product_name }} <small>{{ item.product_id }}</small></span>
+                  <strong>{{ item.value }}</strong>
+                </div>
+                <div class="bar-track"
+                     role="img"
+                     aria-label="{{ item.product_name }}, {{ indicator.name }}: {{ item.value }}, normalized prototype display {{ '%.1f'|format(item.normalized_value) }} out of 100">
+                  <span style="width: {{ item.normalized_value }}%"></span>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        </details>
+      {% endfor %}
+    </div>
+    <p class="chart-note">Bars show the normalized value used by the prototype scorer (0–100); the original indicator value is shown beside each bar. This scale is for display and does not make different indicator types directly comparable.</p>
+  {% else %}
+    <p class="chart-note">No supported indicator values are available yet.</p>
+  {% endif %}
 </section>
 
 <section class="content-section">
