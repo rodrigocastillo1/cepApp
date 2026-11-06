@@ -1,5 +1,21 @@
 # cepApp
-An AI-powered web app for exploring electronics product passports, evaluating circularity, and understanding sustainability through data, analytics, and AI.
+Capstone Project for the Compact Programming Course in Python. This is an AI-powered web app for exploring electronics product passports, evaluating circularity, and understanding sustainability through data, analytics, and AI.
+
+Prof. Dr. Galyna Tabunshchyk
+
+Group 11.
+Topic: AI-Powered Circular Economy Product Passport
+
+| Student                    | Matriculation number | Subsystem                                                        |
+| -------------------------- | -------------------- | ---------------------------------------------------------------- |
+| Rodrigo Castillo Alcantara | ESE - 7226791        | - Analytics Subsystem<br>- AI provider Subsystem               |
+| Elnur Allazov              | ESE - 7226316        | - Product Data Subsystem<br>- Circularity Assessment Subsystem |
+
+# [Homeworkassignment003] Web APIs & Database Access Layers
+
+The following diagrams describe the classes present in each of the application subsystems.
+
+For more information watch the presentation video: [HomeAssignment3-CPC(GROUP 11)](https://www.youtube.com/watch?v=XjHe5QYjW2E)
 
 ## How to run the app locally
 
