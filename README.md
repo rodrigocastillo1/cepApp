@@ -11,34 +11,9 @@ Topic: AI-Powered Circular Economy Product Passport
 | Rodrigo Castillo Alcantara | ESE - 7226791        | - Analytics Subsystem<br>- AI provider Subsystem               |
 | Elnur Allazov              | ESE - 7226316        | - Product Data Subsystem<br>- Circularity Assessment Subsystem |
 
-# [Homeworkassignment001] Subsystem UML Class Diagrams
+# [Homeworkassignment004] Exception Handling and Unit tests
 
-The following diagrams describe the classes present in each of the application subsystems.
-
-For more information watch the presentation video: [HomeAssignment1-CPC(GROUP 11)](https://www.youtube.com/watch?v=vU1BhcSXFp0)
-
-## 1. Product Data Subsystem
-
-![](./docs/UML_Diagrams/UML_Subsystem1_ProductRepository.svg)
-
-## 2. Circularity Assessment Subsystem
-
-![](./docs/UML_Diagrams/UML_Subsystem2_CircularityScorer.svg)
-
-## 3. Analytics Subsystem
-
-![](./docs/UML_Diagrams/UML_Subsystem3_AnalyticsService.svg)
-
-## 4. AI provider Subsystem
-
-![](./docs/UML_Diagrams/UML_Subsystem4_AIProvider.svg)
-
-## 5. Tool - QR generator utility
-
-![](./docs/UML_Diagrams/UML_Tool_DemoQRCodeGenerator.svg)
-
-
----
+For more information watch the presentation video: [HomeAssignment4-CPC(GROUP 11)](https://youtu.be/cI1xLXaSG6g?si=xnD2oO0cj91rpWuY)
 
 ## How to run the app locally
 
