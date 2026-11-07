@@ -215,6 +215,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const bars = liveCarbonChart.querySelector("#live-carbon-bars");
     const updated = liveCarbonChart.querySelector("#live-carbon-updated");
     let refreshing = false;
+    let previousTotals = null;
 
     const showStatus = (message, isError = false) => {
       status.textContent = message;
@@ -235,11 +236,23 @@ document.addEventListener("DOMContentLoaded", () => {
         if (data.brands.length === 0) {
           showStatus("No lifecycle events have been processed yet.");
           updated.textContent = "";
+          previousTotals = new Map();
           return;
         }
 
-        const largestTotal = Math.max(...data.brands.map((brand) => brand.total_kg_co2e));
-        data.brands.forEach((brand) => {
+        const brands = [...data.brands].sort(
+          (left, right) =>
+            left.total_kg_co2e - right.total_kg_co2e
+            || left.brand.localeCompare(right.brand),
+        );
+        const largestTotal = Math.max(...brands.map((brand) => brand.total_kg_co2e));
+        const currentTotals = new Map();
+        brands.forEach((brand) => {
+          const totalValue = Number(brand.total_kg_co2e);
+          const hasChanged = previousTotals !== null
+            && previousTotals.get(brand.brand) !== totalValue;
+          currentTotals.set(brand.brand, totalValue);
+
           const row = document.createElement("div");
           row.className = "bar-row carbon-bar";
 
@@ -248,7 +261,11 @@ document.addEventListener("DOMContentLoaded", () => {
           const brandName = document.createElement("span");
           brandName.textContent = `${brand.brand} · ${brand.event_count} events`;
           const total = document.createElement("strong");
-          total.textContent = Number(brand.total_kg_co2e).toFixed(2);
+          total.textContent = totalValue.toFixed(2);
+          if (hasChanged) {
+            brandName.classList.add("live-carbon-value-updated");
+            total.classList.add("live-carbon-value-updated");
+          }
           label.append(brandName, total);
 
           const track = document.createElement("div");
@@ -264,11 +281,12 @@ document.addEventListener("DOMContentLoaded", () => {
           row.append(label, track);
           bars.append(row);
         });
+        previousTotals = currentTotals;
 
         status.textContent = "Live totals from processed demo events · kg CO₂e";
         status.classList.remove("is-error");
         bars.hidden = false;
-        const latest = data.brands.reduce(
+        const latest = brands.reduce(
           (newest, brand) => (brand.updated_at > newest ? brand.updated_at : newest),
           "",
         );
