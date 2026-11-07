@@ -441,6 +441,11 @@ h1 {
 .carbon-bar .bar-track span { background: #4399bd; }
 .chart-note { margin: 1.2rem 0 0; padding-top: .7rem; border-top: 1px solid #edf1ee; color: var(--muted); font-size: .68rem; }
 .content-section > .section-heading .muted { margin: .35rem 0 0; font-size: .76rem; }
+.live-carbon-card { margin-top: 1rem; }
+.live-carbon-card .live-carbon-status { margin-top: 0; padding-top: 0; border-top: 0; }
+.live-carbon-status.is-error { color: #a23b2b; }
+.live-carbon-bars .bar-track span { transition: width .35s ease; }
+.live-carbon-updated { display: block; margin-top: .7rem; color: var(--muted); font-size: .65rem; }
 .dimension-chart { overflow: hidden; border: 1px solid var(--line); border-radius: 14px; background: white; }
 .dimension-product { display: grid; grid-template-columns: minmax(150px, .7fr) minmax(0, 2fr); gap: 1rem; padding: 1rem; border-bottom: 1px solid #edf1ee; }
 .dimension-product:last-child { border-bottom: 0; }
