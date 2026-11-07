@@ -4,11 +4,21 @@ from io import BytesIO
 
 import qrcode
 from qrcode.image.svg import SvgPathImage
-from flask import Blueprint, abort, current_app, redirect, render_template, request, url_for
+from flask import (
+    Blueprint,
+    abort,
+    current_app,
+    jsonify,
+    redirect,
+    render_template,
+    request,
+    url_for,
+)
 
 from modules.ai.gemini_provider import GeminiProvider
 from modules.ai.openai_provider import OpenAIProvider
 from modules.ai.provider import AIProvider, AIProviderError, AIProviderNotConfigured
+from modules.analytics.lifecycle_store import LifecycleEventStore
 from modules.analytics.service import AnalyticsService
 from modules.circularity.scoring import CircularityScorer
 from modules.product_data.product_repository import ProductRepository
@@ -19,6 +29,10 @@ circularity_scorer = CircularityScorer()
 
 def get_repository() -> ProductRepository:
     return ProductRepository(current_app.config["DATABASE"])
+
+
+def get_lifecycle_event_store() -> LifecycleEventStore:
+    return LifecycleEventStore(current_app.config["DATABASE"])
 
 
 def get_ai_provider() -> AIProvider:
@@ -116,6 +130,11 @@ def analytics():
         indicators=analytics_service.get_indicator_analytics(products),
         scorer=circularity_scorer,
     )
+
+
+@main.get("/api/analytics/carbon-footprint")
+def carbon_footprint_analytics():
+    return jsonify(brands=get_lifecycle_event_store().get_brand_totals())
 
 
 @main.route("/products/<product_id>/coach", methods=["GET", "POST"])
