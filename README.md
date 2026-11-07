@@ -1,59 +1,102 @@
 # cepApp
-An AI-powered web app for exploring electronics product passports, evaluating circularity, and understanding sustainability through data, analytics, and AI.
+Capstone Project for the Compact Programming Course in Python. This is an AI-powered web app for exploring electronics product passports, evaluating circularity, and understanding sustainability through data, analytics, and AI.
 
-## How to run the app locally
+Prof. Dr. Galyna Tabunshchyk
 
-For an explanation of the current indicator normalization rules, score
-calculation, and coverage, see
-[Circularity Score Calculation](./CIRCULARITY_METHODOLOGY.md).
+Group 11.
+Topic: AI-Powered Circular Economy Product Passport
 
-1. Open a terminal in the project folder.
-2. Create a virtual environment (optional but recommended):
-   ```bash
-   python -m venv .venv
-   .\.venv\Scripts\activate
-   ```
-3. Install dependencies:
-   ```bash
-   python -m pip install --upgrade pip
-   python -m pip install -r requirements.txt
-   ```
-4. Create a `.env` file in the project root and set a secret key:
-   ```text
-   SECRET_KEY=your-generated-secret-key
-   AI_PROVIDER=openai
-   OPENAI_API_KEY=your-openai-api-key
-   OPENAI_MODEL=gpt-4o-mini
-   GEMINI_API_KEY=your-gemini-api-key
-   GEMINI_MODEL=gemini-flash-latest
-   ```
-   Choose `AI_PROVIDER=openai` or `AI_PROVIDER=gemini`; only the selected
-   provider's API key is needed. The model settings are optional and default to
-   `gpt-4o-mini` and `gemini-3.5-flash-lite`, respectively. Keep `.env` local; it
-   is ignored by Git. You can generate a Flask secret key running the following command:
-   ```bash
-   python -c "import secrets; print(secrets.token_hex(32))"
-   ```
-   Without the selected provider's API key, the coach shows a configuration
-   error instead of returning a mock answer.
-5. Start the Flask app:
-   ```bash
-   python -m app.app
-   ```
-6. Open the app in your browser:
-   ```text
-   http://127.0.0.1:5000
-   ```
+| Student                    | Matriculation number | Subsystem                                                        |
+| -------------------------- | -------------------- | ---------------------------------------------------------------- |
+| Rodrigo Castillo Alcantara | ESE - 7226791        | - Analytics Subsystem<br>- AI provider Subsystem               |
+| Elnur Allazov              | ESE - 7226316        | - Product Data Subsystem<br>- Circularity Assessment Subsystem |
 
-### Generate demo QR codes
+# [Homeworkassignment002] Architecture Diagrams
 
-From the project root, run:
-```bash
-python -m tools.generate_demo_qr_codes
+For more information watch the presentation video: [HomeAssignment2-CPC(GROUP 11)](https://www.youtube.com/watch?v=BfJSN0wDNUU)
+
+## Real-Time Processing Pipeline
+
+```mermaid
+flowchart LR
+    P["DemoLifecycleEventProducer"] -->|"JSON · lifecycle-events"| B["Redpanda<br/>Kafka-compatible broker"]
+    B --> F["Faust app and agent"]
+    F -->|"decode JSON"| V["LifecycleEventProcessor"]
+    V -->|"product lookup"| R["ProductRepository"]
+    R --> D[("catalogue.db<br/>products + lifecycle_events")]
+    V -->|"verified + nonnegative + known product"| S["LifecycleEventStore"]
+    S --> D
+    C["Analytics page<br/>chart polls every 3 seconds"] -->|"GET /api/analytics/carbon-footprint"| W["Flask API"]
+    W -->|"aggregate totals"| S
+    W -->|"JSON response"| C
 ```
 
-The utility saves one SVG per demo product to `data/demo_qr_codes/`. Choose a
-different output directory with:
-```bash
-python -m tools.generate_demo_qr_codes --output-dir path\to\qr-codes
+Compose runs Redpanda, the Faust worker, the demo producer, and Flask. The
+faust worker and web app share the `catalogue.db` SQLite file.
+
+## Live analytics feature: class diagrams
+
+```mermaid
+classDiagram
+direction LR
+
+class DemoLifecycleEventProducer {
+  +str topic
+  +float interval_seconds
+  +tuple products
+  +KafkaProducer producer
+  +create_event() dict~str, object~
+  +run_forever()
+}
+
+class LifecycleEventProcessor {
+  +ProductRepository repository
+  +LifecycleEventStore event_store
+  +process(payload) bool
+}
+
+class ProductRepository {
+  +str database_path
+  +list_products() list~Product~
+  +get_product_by_id(product_id) Product | None
+  +search_products(query) list~Product~
+}
+
+class LifecycleEventStore {
+  +Path database_path
+  +initialize()
+  +record_event(event_id, product_id, brand, carbon_delta_kg_co2e, occurred_at) bool
+  +get_brand_totals() list~dict~
+}
+
+class Product {
+  +str product_id
+  +str brand
+  +str category
+}
+
+class KafkaProducer {
+  <<external library>>
+}
+
+DemoLifecycleEventProducer ..> KafkaProducer : publishes JSON events
+LifecycleEventProcessor --> ProductRepository : looks up product and brand
+LifecycleEventProcessor --> LifecycleEventStore : records accepted event
+ProductRepository ..> Product : loads from catalogue
 ```
+
+---
+
+### Run the Docker Compose demo
+
+1. Start Docker Desktop.
+2. From the project folder, start all services:
+   ```powershell
+   docker compose up --build
+   ```
+3. Open the app at `http://localhost:5000`. The live brand chart is at
+   `http://localhost:5000/analytics`.
+4. To stop the services, press **Ctrl+C** in the terminal, then run:
+   ```powershell
+   docker compose down
+   ```
