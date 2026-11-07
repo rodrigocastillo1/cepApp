@@ -3,6 +3,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 
+from modules.circularity.errors import CircularityCalculationError
 from modules.circularity.methodology import (
     DEFAULT_METHODOLOGY,
     ScoringMethodology,
@@ -43,6 +44,11 @@ class CircularityScorer:
         self.methodology = methodology
 
     def calculate(self, product: Product) -> CircularityAssessment:
+        if not isinstance(product, Product):
+            raise CircularityCalculationError(
+                "Circularity scoring requires a Product instance."
+            )
+
         components = tuple(
             self.calculate_component(
                 dimension,
@@ -93,6 +99,10 @@ class CircularityScorer:
 
     def normalize(self, indicator: Indicator) -> float | None:
         """Map supported example formats to 0–100; return None if unsupported."""
+        if not isinstance(indicator, Indicator):
+            raise CircularityCalculationError(
+                "Indicator normalization requires an Indicator instance."
+            )
         if indicator.value is None:
             return None
 

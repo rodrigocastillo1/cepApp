@@ -4,6 +4,8 @@ from dataclasses import dataclass, field
 from types import MappingProxyType
 from typing import Mapping
 
+from modules.circularity.errors import InvalidMethodologyError
+
 
 @dataclass(frozen=True)
 class ScoringMethodology:
@@ -51,13 +53,17 @@ class ScoringMethodology:
 
     def __post_init__(self) -> None:
         if not self.version.strip():
-            raise ValueError("Methodology version must not be empty.")
+            raise InvalidMethodologyError("Methodology version must not be empty.")
         if not self.dimensions:
-            raise ValueError("Methodology must define at least one dimension.")
+            raise InvalidMethodologyError(
+                "Methodology must define at least one dimension."
+            )
         if self.max_years_for_full_score <= 0:
-            raise ValueError("The year cap must be greater than zero.")
+            raise InvalidMethodologyError("The year cap must be greater than zero.")
         if any(not 0 <= score <= 100 for score in self.binary_scores.values()):
-            raise ValueError("Binary indicator scores must be between 0 and 100.")
+            raise InvalidMethodologyError(
+                "Binary indicator scores must be between 0 and 100."
+            )
         object.__setattr__(
             self,
             "binary_scores",
