@@ -9,7 +9,7 @@ from qrcode.constants import ERROR_CORRECT_M
 from qrcode.main import QRCode
 from qrcode.image.svg import SvgPathImage
 
-from app.demo_catalog import DEMO_PRODUCTS
+from modules.product_data.demo_catalog import DEMO_PRODUCTS
 
 
 class DemoQRCodeGenerator:
