@@ -1,0 +1,64 @@
+services:
+  redpanda:
+    image: docker.redpanda.com/redpandadata/redpanda:v24.3.6
+    command:
+      - redpanda
+      - start
+      - --mode
+      - dev-container
+      - --smp
+      - "1"
+      - --memory
+      - 1G
+      - --reserve-memory
+      - 0M
+      - --node-id
+      - "0"
+      - --check=false
+      - --kafka-addr
+      - internal://0.0.0.0:9092
+      - --advertise-kafka-addr
+      - internal://redpanda:9092
+    restart: unless-stopped
+
+  web:
+    build: .
+    command: flask --app app.app:app run --host=0.0.0.0 --port=5000
+    environment:
+      SECRET_KEY: ${SECRET_KEY:-local-demo-only}
+      DATABASE: /data/catalogue.db
+      KAFKA_BROKER: kafka://redpanda:9092
+    ports:
+      - "127.0.0.1:5000:5000"
+    volumes:
+      - app-data:/data
+    depends_on:
+      - redpanda
+    restart: unless-stopped
+
+  worker:
+    build: .
+    command: faust -A modules.lifecycle.faust_worker worker -l info
+    environment:
+      DATABASE: /data/catalogue.db
+      KAFKA_BROKER: kafka://redpanda:9092
+    volumes:
+      - app-data:/data
+    depends_on:
+      - redpanda
+      - web
+    restart: unless-stopped
+
+  producer:
+    build: .
+    command: python -m tools.generate_lifecycle_events
+    environment:
+      KAFKA_BROKER: redpanda:9092
+      EVENT_INTERVAL_SECONDS: "3"
+    depends_on:
+      - redpanda
+      - worker
+    restart: unless-stopped
+
+volumes:
+  app-data:
