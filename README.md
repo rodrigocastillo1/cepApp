@@ -15,6 +15,31 @@ Topic: AI-Powered Circular Economy Product Passport
 
 For more information watch the presentation video: [HomeAssignment4-CPC(GROUP 11)](https://youtu.be/cI1xLXaSG6g?si=xnD2oO0cj91rpWuY)
 
+Coverage results below were obtained by running:
+
+```bash
+python -m pytest tests --cov=modules --cov-report=term-missing
+```
+
+All subsystems included in this coverage report are located in the `modules/` folder.
+
+| Module | Statements | Miss | Coverage |
+| --- | ---: | ---: | ---: |
+| `ai/gemini_provider.py` | 31 | 10 | 68% |
+| `ai/openai_provider.py` | 31 | 10 | 68% |
+| `ai/provider.py` | 8 | 0 | 100% |
+| `analytics/errors.py` | 2 | 0 | 100% |
+| `analytics/service.py` | 61 | 6 | 90% |
+| `circularity/errors.py` | 3 | 0 | 100% |
+| `circularity/methodology.py` | 26 | 2 | 92% |
+| `circularity/scoring.py` | 65 | 1 | 98% |
+| `product_data/database.py` | 51 | 16 | 69% |
+| `product_data/errors.py` | 3 | 0 | 100% |
+| `product_data/models.py` | 33 | 0 | 100% |
+| `product_data/product_repository.py` | 53 | 4 | 92% |
+| `product_data/seed.py` | 14 | 1 | 93% |
+| **TOTAL** | **381** | **50** | **87%** |
+
 ## How to run the app locally
 
 For an explanation of the current indicator normalization rules, score

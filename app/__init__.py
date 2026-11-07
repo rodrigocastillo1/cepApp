@@ -5,11 +5,11 @@ from typing import Mapping
 from flask import Flask
 from dotenv import load_dotenv
 
-from modules.product_data.database import get_database_path, initialize_database
-
 
 def create_app() -> Flask:
     load_dotenv(Path(__file__).resolve().parent.parent / ".env")
+
+    from modules.product_data.database import get_database_path, initialize_database
 
     app = Flask(__name__)
     app.config.from_mapping(
