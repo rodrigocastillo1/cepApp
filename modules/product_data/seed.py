@@ -2,7 +2,7 @@
 
 import sqlite3
 
-from app.demo_catalog import DEMO_PRODUCTS
+from modules.product_data.demo_catalog import DEMO_PRODUCTS
 from modules.circularity.methodology import DEFAULT_METHODOLOGY
 
 

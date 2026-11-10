@@ -87,6 +87,26 @@
   </article>
 </section>
 
+<section class="content-section live-carbon-section"
+         data-live-carbon-chart
+         data-api-url="{{ url_for('main.carbon_footprint_analytics') }}">
+  <div class="section-heading">
+    <div>
+      <span class="eyebrow">Faust event stream · synthetic demo</span>
+      <h2>Total carbon footprint by brand</h2>
+      <p class="muted">Verified demo lifecycle events are added as they are processed.</p>
+    </div>
+  </div>
+  <article class="panel live-carbon-card">
+    <p id="live-carbon-status" class="chart-note live-carbon-status" role="status" aria-live="polite">
+      Loading processed event data…
+    </p>
+    <div id="live-carbon-bars" class="live-carbon-bars" hidden></div>
+    <p class="chart-note">Totals are sums of synthetic carbon contributions, not product lifecycle assessments.</p>
+    <small id="live-carbon-updated" class="live-carbon-updated"></small>
+  </article>
+</section>
+
 <section class="content-section">
   <div class="section-heading">
     <div>
