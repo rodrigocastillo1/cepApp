@@ -1,4 +1,4 @@
-"""Synthetic product records used to seed the SQLite-backed catalogue."""
+"""Synthetic product records used by the product-data module."""
 
 DEMO_PRODUCTS = {
     "LAP-LOOP-14": {

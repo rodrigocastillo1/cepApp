@@ -208,4 +208,100 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   });
+
+  const liveCarbonChart = document.querySelector("[data-live-carbon-chart]");
+  if (liveCarbonChart) {
+    const status = liveCarbonChart.querySelector("#live-carbon-status");
+    const bars = liveCarbonChart.querySelector("#live-carbon-bars");
+    const updated = liveCarbonChart.querySelector("#live-carbon-updated");
+    let refreshing = false;
+    let previousTotals = null;
+
+    const showStatus = (message, isError = false) => {
+      status.textContent = message;
+      status.classList.toggle("is-error", isError);
+      bars.hidden = true;
+    };
+
+    const refreshCarbonChart = async () => {
+      if (refreshing) return;
+      refreshing = true;
+      try {
+        const url = new URL(liveCarbonChart.dataset.apiUrl, window.location.origin);
+        const response = await fetch(url, { cache: "no-store" });
+        if (!response.ok) throw new Error("Analytics data request failed.");
+        const data = await response.json();
+
+        bars.replaceChildren();
+        if (data.brands.length === 0) {
+          showStatus("No lifecycle events have been processed yet.");
+          updated.textContent = "";
+          previousTotals = new Map();
+          return;
+        }
+
+        const brands = [...data.brands].sort(
+          (left, right) =>
+            left.total_kg_co2e - right.total_kg_co2e
+            || left.brand.localeCompare(right.brand),
+        );
+        const largestTotal = Math.max(...brands.map((brand) => brand.total_kg_co2e));
+        const currentTotals = new Map();
+        brands.forEach((brand) => {
+          const totalValue = Number(brand.total_kg_co2e);
+          const hasChanged = previousTotals !== null
+            && previousTotals.get(brand.brand) !== totalValue;
+          currentTotals.set(brand.brand, totalValue);
+
+          const row = document.createElement("div");
+          row.className = "bar-row carbon-bar";
+
+          const label = document.createElement("div");
+          label.className = "bar-label";
+          const brandName = document.createElement("span");
+          brandName.textContent = `${brand.brand} · ${brand.event_count} events`;
+          const total = document.createElement("strong");
+          total.textContent = totalValue.toFixed(2);
+          if (hasChanged) {
+            brandName.classList.add("live-carbon-value-updated");
+            total.classList.add("live-carbon-value-updated");
+          }
+          label.append(brandName, total);
+
+          const track = document.createElement("div");
+          track.className = "bar-track";
+          track.setAttribute("role", "img");
+          track.setAttribute(
+            "aria-label",
+            `${brand.brand}: ${Number(brand.total_kg_co2e).toFixed(2)} kg CO2 equivalent`,
+          );
+          const fill = document.createElement("span");
+          fill.style.width = `${largestTotal > 0 ? (brand.total_kg_co2e / largestTotal) * 100 : 0}%`;
+          track.append(fill);
+          row.append(label, track);
+          bars.append(row);
+        });
+        previousTotals = currentTotals;
+
+        status.textContent = "Live totals from processed demo events · kg CO₂e";
+        status.classList.remove("is-error");
+        bars.hidden = false;
+        const latest = brands.reduce(
+          (newest, brand) => (brand.updated_at > newest ? brand.updated_at : newest),
+          "",
+        );
+        updated.textContent = latest
+          ? `Latest event: ${new Date(latest).toLocaleString()}`
+          : "";
+      } catch {
+        showStatus("Live analytics are temporarily unavailable. Retrying shortly.", true);
+        updated.textContent = "";
+      } finally {
+        refreshing = false;
+      }
+    };
+
+    refreshCarbonChart();
+    window.setInterval(refreshCarbonChart, 3000);
+  }
 });

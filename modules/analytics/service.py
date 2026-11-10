@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+from modules.analytics.errors import InvalidAnalyticsInput
 from modules.circularity.scoring import CircularityScorer
 from modules.product_data.models import Product
 
@@ -17,7 +18,17 @@ class AnalyticsService:
     def __init__(self, scorer: CircularityScorer | None = None) -> None:
         self.scorer = scorer or CircularityScorer()
 
+    @staticmethod
+    def _validate_products(products: list[Product]) -> None:
+        if not isinstance(products, list) or any(
+            not isinstance(product, Product) for product in products
+        ):
+            raise InvalidAnalyticsInput(
+                "Analytics methods require a list of Product instances."
+            )
+
     def get_brand_analytics(self, products: list[Product]) -> list[dict]:
+        self._validate_products(products)
         grouped: dict[str, _BrandAggregate] = {}
         for product in products:
             brand = grouped.setdefault(product.brand, _BrandAggregate())
@@ -47,6 +58,7 @@ class AnalyticsService:
         ]
 
     def get_product_dimension_analytics(self, products: list[Product]) -> list[dict]:
+        self._validate_products(products)
         product_analytics = []
         for product in products:
             assessment = self.scorer.calculate(product)
@@ -70,6 +82,7 @@ class AnalyticsService:
         self,
         products: list[Product],
     ) -> list[dict]:
+        self._validate_products(products)
         grouped: dict[str, dict] = {}
         for product in products:
             category = grouped.setdefault(
@@ -112,6 +125,7 @@ class AnalyticsService:
         ]
 
     def get_indicator_analytics(self, products: list[Product]) -> list[dict]:
+        self._validate_products(products)
         grouped: dict[tuple[str, str], list[dict]] = {}
         for product in products:
             for dimension in self.scorer.methodology.dimensions:

@@ -9,7 +9,11 @@ from qrcode.constants import ERROR_CORRECT_M
 from qrcode.main import QRCode
 from qrcode.image.svg import SvgPathImage
 
-from app.demo_catalog import DEMO_PRODUCTS
+from modules.product_data.demo_catalog import DEMO_PRODUCTS
+
+
+class QRCodeGenerationError(ValueError):
+    """Raised when a demo product QR code cannot be generated."""
 
 
 class DemoQRCodeGenerator:
@@ -24,7 +28,7 @@ class DemoQRCodeGenerator:
     def build_qr_code(self, product_id: str) -> QRCode:
         """Build a QR code for a known demo product ID."""
         if product_id not in DEMO_PRODUCTS:
-            raise ValueError(f"Unknown demo product ID: {product_id}")
+            raise QRCodeGenerationError(f"Unknown demo product ID: {product_id}")
 
         qr_code = qrcode.QRCode(
             error_correction=ERROR_CORRECT_M,
