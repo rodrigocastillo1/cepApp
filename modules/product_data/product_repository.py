@@ -4,6 +4,7 @@ import sqlite3
 from pathlib import Path
 
 from .database import connect_database, get_database_path
+from .errors import ProductRepositoryError
 from .models import Indicator, Product, SourceReference
 
 
@@ -15,10 +16,13 @@ class ProductRepository:
         return connect_database(self.database_path)
 
     def list_products(self) -> list[Product]:
-        with self._connect() as connection:
-            rows = connection.execute(
-                "SELECT product_id FROM products ORDER BY brand, name"
-            ).fetchall()
+        try:
+            with self._connect() as connection:
+                rows = connection.execute(
+                    "SELECT product_id FROM products ORDER BY brand, name"
+                ).fetchall()
+        except sqlite3.Error as error:
+            raise ProductRepositoryError("Could not retrieve the product list.") from error
         products = []
         for row in rows:
             product = self.get_product_by_id(row["product_id"])
@@ -27,36 +31,41 @@ class ProductRepository:
         return products
 
     def get_product_by_id(self, product_id: str) -> Product | None:
-        with self._connect() as connection:
-            product_row = connection.execute(
-                "SELECT * FROM products WHERE product_id = ?",
-                (product_id,),
-            ).fetchone()
-            if product_row is None:
-                return None
+        try:
+            with self._connect() as connection:
+                product_row = connection.execute(
+                    "SELECT * FROM products WHERE product_id = ?",
+                    (product_id,),
+                ).fetchone()
+                if product_row is None:
+                    return None
 
-            indicator_rows = connection.execute(
-                """
-                SELECT
-                    pi.dimension_name,
-                    pi.indicator_name,
-                    pi.indicator_value,
-                    pi.source_text,
-                    sr.source_id,
-                    sr.publisher,
-                    sr.url,
-                    sr.accessed_at,
-                    sr.notes
-                FROM product_indicators AS pi
-                LEFT JOIN source_references AS sr
-                    ON sr.product_id = pi.product_id
-                    AND sr.dimension_name = pi.dimension_name
-                    AND sr.indicator_name = pi.indicator_name
-                WHERE pi.product_id = ?
-                ORDER BY pi.dimension_name, pi.sort_order, pi.indicator_name
-                """,
-                (product_id,),
-            ).fetchall()
+                indicator_rows = connection.execute(
+                    """
+                    SELECT
+                        pi.dimension_name,
+                        pi.indicator_name,
+                        pi.indicator_value,
+                        pi.source_text,
+                        sr.source_id,
+                        sr.publisher,
+                        sr.url,
+                        sr.accessed_at,
+                        sr.notes
+                    FROM product_indicators AS pi
+                    LEFT JOIN source_references AS sr
+                        ON sr.product_id = pi.product_id
+                        AND sr.dimension_name = pi.dimension_name
+                        AND sr.indicator_name = pi.indicator_name
+                    WHERE pi.product_id = ?
+                    ORDER BY pi.dimension_name, pi.sort_order, pi.indicator_name
+                    """,
+                    (product_id,),
+                ).fetchall()
+        except sqlite3.Error as error:
+            raise ProductRepositoryError(
+                f"Could not retrieve product {product_id!r}."
+            ) from error
 
         indicators: dict[str, list[Indicator]] = {}
 
@@ -94,15 +103,18 @@ class ProductRepository:
         if not normalized:
             return []
 
-        with self._connect() as connection:
-            rows = connection.execute(
-                """
-                SELECT product_id FROM products
-                WHERE LOWER(product_id) LIKE ? OR LOWER(name) LIKE ? OR LOWER(brand) LIKE ?
-                ORDER BY brand, name
-                """,
-                (f"%{normalized.lower()}%", f"%{normalized.lower()}%", f"%{normalized.lower()}%"),
-            ).fetchall()
+        try:
+            with self._connect() as connection:
+                rows = connection.execute(
+                    """
+                    SELECT product_id FROM products
+                    WHERE LOWER(product_id) LIKE ? OR LOWER(name) LIKE ? OR LOWER(brand) LIKE ?
+                    ORDER BY brand, name
+                    """,
+                    (f"%{normalized.lower()}%", f"%{normalized.lower()}%", f"%{normalized.lower()}%"),
+                ).fetchall()
+        except sqlite3.Error as error:
+            raise ProductRepositoryError("Could not search the product catalogue.") from error
 
         products = []
         for row in rows:
