@@ -4,6 +4,7 @@ import sqlite3
 
 from modules.product_data.demo_catalog import DEMO_PRODUCTS
 from modules.circularity.methodology import DEFAULT_METHODOLOGY
+from modules.product_data.qr_codes import generate_product_qr_svg
 
 
 def seed_demo_products(connection: sqlite3.Connection) -> None:
@@ -76,3 +77,11 @@ def seed_demo_products(connection: sqlite3.Connection) -> None:
                         "Synthetic data created for the demo catalogue.",
                     ),
                 )
+
+        connection.execute(
+            """
+            INSERT OR REPLACE INTO product_qr_codes (product_id, svg_data)
+            VALUES (?, ?)
+            """,
+            (product_id, generate_product_qr_svg(product_id)),
+        )
