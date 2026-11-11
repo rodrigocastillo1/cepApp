@@ -98,6 +98,20 @@ class ProductRepository:
             indicators=indicators,
         )
 
+    def get_product_qr_svg(self, product_id: str) -> bytes | None:
+        try:
+            with self._connect() as connection:
+                row = connection.execute(
+                    "SELECT svg_data FROM product_qr_codes WHERE product_id = ?",
+                    (product_id,),
+                ).fetchone()
+        except sqlite3.Error as error:
+            raise ProductRepositoryError(
+                f"Could not retrieve QR code for product {product_id!r}."
+            ) from error
+
+        return bytes(row["svg_data"]) if row is not None else None
+
     def search_products(self, query: str) -> list[Product]:
         normalized = query.strip()
         if not normalized:

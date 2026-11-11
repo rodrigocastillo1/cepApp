@@ -4,12 +4,10 @@ import argparse
 from io import BytesIO
 from pathlib import Path
 
-import qrcode
-from qrcode.constants import ERROR_CORRECT_M
 from qrcode.main import QRCode
-from qrcode.image.svg import SvgPathImage
 
 from modules.product_data.demo_catalog import DEMO_PRODUCTS
+from modules.product_data.qr_codes import build_product_qr_code, render_qr_code_svg
 
 
 class QRCodeGenerationError(ValueError):
@@ -30,14 +28,7 @@ class DemoQRCodeGenerator:
         if product_id not in DEMO_PRODUCTS:
             raise QRCodeGenerationError(f"Unknown demo product ID: {product_id}")
 
-        qr_code = qrcode.QRCode(
-            error_correction=ERROR_CORRECT_M,
-            box_size=10,
-            border=4,
-        )
-        qr_code.add_data(product_id)
-        qr_code.make(fit=True)
-        return qr_code
+        return build_product_qr_code(product_id)
 
     def generate(self, product_id: str) -> Path:
         """Save one demo product QR code as an SVG and return its path."""
@@ -45,10 +36,7 @@ class DemoQRCodeGenerator:
         self.output_directory.mkdir(parents=True, exist_ok=True)
 
         image_path = self.output_directory / f"{product_id}.svg"
-        image = qr_code.make_image(image_factory=SvgPathImage)
-        output = BytesIO()
-        image.save(output)
-        image_path.write_bytes(output.getvalue())
+        image_path.write_bytes(render_qr_code_svg(qr_code))
         return image_path
 
     def generate_all(self) -> list[Path]:
