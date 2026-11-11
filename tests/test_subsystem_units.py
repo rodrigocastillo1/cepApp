@@ -39,7 +39,7 @@ def _indicator(value, name="Recycled content"):
     )
 
 
-def test_product_data_initializes_three_tables_without_saved_scores(tmp_path):
+def test_product_data_initializes_tables_without_saved_scores(tmp_path):
     database_path = tmp_path / "schema.sqlite"
     initialize_database(database_path)
 
@@ -54,7 +54,12 @@ def test_product_data_initializes_three_tables_without_saved_scores(tmp_path):
             row[1] for row in connection.execute("PRAGMA table_info(products)")
         }
 
-    assert {"products", "product_indicators", "source_references"} <= tables
+    assert {
+        "products",
+        "product_indicators",
+        "source_references",
+        "product_qr_codes",
+    } <= tables
     assert "score" not in product_columns
     assert "product_scores" not in tables
 
@@ -208,24 +213,31 @@ def test_ai_providers_return_trimmed_answers_using_injected_clients(tmp_path):
     assert product is not None
     assessment = CircularityScorer().calculate(product)
 
+    openai_requests = []
+    gemini_requests = []
+
+    def create_openai_response(**kwargs):
+        openai_requests.append(kwargs)
+        return SimpleNamespace(
+            choices=[
+                SimpleNamespace(message=SimpleNamespace(content="  OpenAI answer  "))
+            ]
+        )
+
+    def create_gemini_response(**kwargs):
+        gemini_requests.append(kwargs)
+        return SimpleNamespace(text="  Gemini answer  ")
+
     openai_client = SimpleNamespace(
         chat=SimpleNamespace(
             completions=SimpleNamespace(
-                create=lambda **_kwargs: SimpleNamespace(
-                    choices=[
-                        SimpleNamespace(
-                            message=SimpleNamespace(content="  OpenAI answer  ")
-                        )
-                    ]
-                )
+                create=create_openai_response
             )
         )
     )
     gemini_client = SimpleNamespace(
         models=SimpleNamespace(
-            generate_content=lambda **_kwargs: SimpleNamespace(
-                text="  Gemini answer  "
-            )
+            generate_content=create_gemini_response
         )
     )
 
@@ -241,6 +253,20 @@ def test_ai_providers_return_trimmed_answers_using_injected_clients(tmp_path):
         )
         == "Gemini answer"
     )
+    openai_messages = openai_requests[0]["messages"]
+    assert (
+        "general knowledge only to explain indicator"
+        in openai_messages[0]["content"]
+    )
+    assert (
+        "Do not state or guess the product-specific value"
+        in openai_messages[0]["content"]
+    )
+    assert "Do not include product IDs, parenthetical asides" in openai_messages[0]["content"]
+    assert '"value": "8.8 / 10"' in openai_messages[1]["content"]
+    assert "application displays the recorded value separately" in gemini_requests[0]["contents"]
+    assert "Do not include product IDs, parenthetical asides" in gemini_requests[0]["contents"]
+    assert '"value": "8.8 / 10"' in gemini_requests[0]["contents"]
 
 
 def test_qr_generator_saves_svg_containing_demo_product_id(tmp_path):
@@ -253,6 +279,35 @@ def test_qr_generator_saves_svg_containing_demo_product_id(tmp_path):
     assert "<svg" in output_path.read_text(encoding="utf-8")
     with pytest.raises(QRCodeGenerationError, match="Unknown demo product ID"):
         generator.build_qr_code("NO-SUCH-PRODUCT")
+
+
+def test_product_qr_svg_is_stored_in_database_for_each_demo_product(tmp_path):
+    repository = _repository(tmp_path)
+    products = repository.list_products()
+
+    svg_data = [
+        repository.get_product_qr_svg(product.product_id) for product in products
+    ]
+
+    assert products
+    for svg in svg_data:
+        assert svg is not None
+        assert svg.startswith(b"<?xml")
+        assert b"<svg" in svg
+    assert repository.get_product_qr_svg("NO-SUCH-PRODUCT") is None
+
+
+def test_product_qr_route_serves_the_svg_stored_in_database(client):
+    repository = ProductRepository(client.application.config["DATABASE"])
+    stored_svg = repository.get_product_qr_svg("LAP-LOOP-14")
+
+    response = client.get("/products/LAP-LOOP-14/qr.svg")
+
+    assert stored_svg is not None
+    assert response.status_code == 200
+    assert response.mimetype == "image/svg+xml"
+    assert response.data == stored_svg
+    assert client.get("/products/NO-SUCH-PRODUCT/qr.svg").status_code == 404
 
 
 def test_product_data_database_connection_raises_subsystem_error(tmp_path, monkeypatch):
