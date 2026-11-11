@@ -26,11 +26,14 @@
            {% if request.endpoint == 'main.product_passport' %}aria-current="page"{% endif %}>Passport</a>
         <a href="{{ url_for('main.analytics') }}"
            {% if request.endpoint == 'main.analytics' %}aria-current="page"{% endif %}>Analytics</a>
-        {% if request.endpoint == 'main.coach' %}
-          <a href="{{ url_for('main.coach', product_id=request.view_args.product_id) }}" aria-current="page">AI coach</a>
+        {% if request.endpoint in ['main.coach', 'main.product_passport'] %}
+          <a href="{{ url_for('main.coach', product_id=request.view_args.product_id) }}"
+             {% if request.endpoint == 'main.coach' %}aria-current="page"{% endif %}>AI coach</a>
         {% else %}
           <a href="{{ url_for('main.coach', product_id='LAP-LOOP-14') }}">AI coach</a>
         {% endif %}
+        <a href="{{ url_for('main.about') }}"
+           {% if request.endpoint == 'main.about' %}aria-current="page"{% endif %}>About</a>
       </nav>
     </header>
 

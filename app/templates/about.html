@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}About the project{% endblock %}
+
+{% block content %}
+<section class="hero" aria-labelledby="about-title">
+  <div class="hero-copy">
+    <span class="eyebrow">FH Dortmund</span>
+    <h1 id="about-title">AI-Powered Circular Economy Product Passport</h1>
+    <p>
+      An academic application exploring electronics product information,
+      circularity assessments, analytics, and AI-supported explanations.
+    </p>
+    <span class="data-badge badge-light">Capstone Project · Compact Programming Course in Python</span>
+  </div>
+  <div class="hero-art" aria-hidden="true">
+    <span class="orbit"></span>
+    <span class="orbit orbit-two"></span>
+    <span class="hero-symbol">↻</span>
+  </div>
+</section>
+
+<section class="content-section" aria-labelledby="project-details-title">
+  <div class="section-heading">
+    <div>
+      <span class="eyebrow">Project information</span>
+      <h2 id="project-details-title">About this project</h2>
+    </div>
+  </div>
+  <div class="entry-grid">
+    <article class="panel">
+      <span class="eyebrow">Academic supervisor</span>
+      <h3>Prof. Dr. Galyna Tabunshchyk</h3>
+      <p class="muted">FH Dortmund</p>
+    </article>
+    <article class="panel">
+      <span class="eyebrow">Project focus</span>
+      <h3>Electronics and circularity</h3>
+      <p class="muted">
+        The application brings product data, circularity scoring, catalogue
+        analytics, and an AI coach together in one web application.
+      </p>
+    </article>
+  </div>
+</section>
+
+<section class="content-section" aria-labelledby="team-title">
+  <div class="section-heading">
+    <div>
+      <span class="eyebrow">Group 11</span>
+      <h2 id="team-title">Project team</h2>
+    </div>
+  </div>
+  <div class="table-wrap" role="region" aria-label="Project team and subsystem responsibilities" tabindex="0">
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">Student</th>
+          <th scope="col">Matriculation number</th>
+          <th scope="col">Subsystems</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Rodrigo Castillo Alcantara</td>
+          <td>ESE - 7226791</td>
+          <td>Analytics Subsystem<br>AI provider Subsystem</td>
+        </tr>
+        <tr>
+          <td>Elnur Allazov</td>
+          <td>ESE - 7226316</td>
+          <td>Product Data Subsystem<br>Circularity Assessment Subsystem</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}
