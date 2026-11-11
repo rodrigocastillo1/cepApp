@@ -43,7 +43,14 @@ class ProductRepository {
   +_connect() sqlite3.Connection
   +list_products() list~Product~
   +get_product_by_id(product_id) Product
+  +get_product_qr_svg(product_id) bytes
   +search_products(query) list~Product~
+}
+
+class ProductQRCodeTable {
+  <<SQLite table>>
+  +str product_id
+  +bytes svg_data
 }
 
 Product "1" *-- "0..*" Indicator : groups by dimension
@@ -51,7 +58,13 @@ Indicator "1" *-- "1" SourceReference : has source details
 ProductRepository ..> Product : creates
 ProductRepository ..> Indicator : creates
 ProductRepository ..> SourceReference : creates
+Product "1" *-- "1" ProductQRCodeTable : has stored QR SVG
+ProductRepository ..> ProductQRCodeTable : retrieves QR SVG
 ```
+
+The QR SVG is generated from the product ID during demo-data seeding and stored
+as a BLOB in `product_qr_codes`. `ProductQRCodeTable` represents the database
+table, not a Python class.
 
 
 ## 2. Circularity Assessment Subsystem
