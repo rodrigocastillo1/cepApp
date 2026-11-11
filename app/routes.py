@@ -1,9 +1,7 @@
 """Flask routes for the responsive product passport interface."""
 
-from io import BytesIO
+import re
 
-import qrcode
-from qrcode.image.svg import SvgPathImage
 from flask import (
     Blueprint,
     abort,
@@ -12,6 +10,7 @@ from flask import (
     redirect,
     render_template,
     request,
+    session,
     url_for,
 )
 
@@ -21,6 +20,7 @@ from modules.ai.provider import AIProvider, AIProviderError, AIProviderNotConfig
 from modules.analytics.lifecycle_store import LifecycleEventStore
 from modules.analytics.service import AnalyticsService
 from modules.circularity.scoring import CircularityScorer
+from modules.product_data.models import Indicator, Product
 from modules.product_data.product_repository import ProductRepository
 
 main = Blueprint("main", __name__)
@@ -52,6 +52,20 @@ def get_ai_provider() -> AIProvider:
         )
     raise AIProviderNotConfigured(
         "Set AI_PROVIDER to either 'openai' or 'gemini'."
+    )
+
+
+def find_mentioned_indicator(question: str, product: Product) -> Indicator | None:
+    normalized_question = re.sub(r"[^a-z0-9]+", " ", question.casefold()).strip()
+    return next(
+        (
+            indicator
+            for indicators in product.indicators.values()
+            for indicator in indicators
+            if re.sub(r"[^a-z0-9]+", " ", indicator.name.casefold()).strip()
+            in normalized_question
+        ),
+        None,
     )
 
 
@@ -99,21 +113,11 @@ def product_passport(product_id: str):
 
 @main.get("/products/<product_id>/qr.svg")
 def product_qr(product_id: str):
-    if get_repository().get_product_by_id(product_id) is None:
+    svg_data = get_repository().get_product_qr_svg(product_id)
+    if svg_data is None:
         abort(404)
 
-    passport_url = url_for(
-        "main.product_passport",
-        product_id=product_id,
-        _external=True,
-    )
-    qr = qrcode.QRCode(box_size=8, border=2)
-    qr.add_data(passport_url)
-    qr.make(fit=True)
-    image = qr.make_image(image_factory=SvgPathImage)
-    output = BytesIO()
-    image.save(output)
-    return output.getvalue(), 200, {"Content-Type": "image/svg+xml"}
+    return svg_data, 200, {"Content-Type": "image/svg+xml"}
 
 
 @main.get("/analytics")
@@ -132,6 +136,11 @@ def analytics():
     )
 
 
+@main.get("/about")
+def about():
+    return render_template("about.html")
+
+
 @main.get("/api/analytics/carbon-footprint")
 def carbon_footprint_analytics():
     return jsonify(brands=get_lifecycle_event_store().get_brand_totals())
@@ -143,9 +152,15 @@ def coach(product_id: str):
     if product is None:
         abort(404)
 
+    session_generation = current_app.config["COACH_SESSION_GENERATION"]
+    if session.get("_coach_session_generation") != session_generation:
+        session.clear()
+        session["_coach_session_generation"] = session_generation
+
     assessment = circularity_scorer.calculate(product)
+    history_key = f"coach_history:{product.product_id}"
+    history = session.get(history_key, [])
     question = ""
-    answer = None
     error = None
     response_status = 200
     configured_provider = current_app.config.get("AI_PROVIDER")
@@ -170,6 +185,18 @@ def coach(product_id: str):
                     product,
                     assessment,
                 )
+                indicator = find_mentioned_indicator(question, product)
+                history = [
+                    *history,
+                    {
+                        "question": question,
+                        "answer": answer,
+                        "indicator_name": indicator.name if indicator else None,
+                        "indicator_value": indicator.value if indicator else None,
+                    },
+                ][-5:]
+                session[history_key] = history
+                return redirect(url_for("main.coach", product_id=product_id))
             except AIProviderNotConfigured:
                 error = "The AI coach is not configured. Check AI_PROVIDER and its API key in the server configuration."
                 response_status = 503
@@ -186,7 +213,7 @@ def coach(product_id: str):
         product=product,
         assessment=assessment,
         question=question,
-        answer=answer,
+        history=history,
         error=error,
         ai_configured=ai_configured,
     ), response_status

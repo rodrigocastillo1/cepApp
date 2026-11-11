@@ -79,6 +79,15 @@ def initialize_database(database_path: str | Path | None = None) -> Path:
                 )
                 """
             )
+            connection.execute(
+                """
+                CREATE TABLE IF NOT EXISTS product_qr_codes (
+                    product_id TEXT PRIMARY KEY,
+                    svg_data BLOB NOT NULL,
+                    FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE CASCADE
+                )
+                """
+            )
             seed_demo_products(connection)
     except sqlite3.Error as error:
         raise DatabaseError(
