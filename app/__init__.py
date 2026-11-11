@@ -1,4 +1,5 @@
 import os
+import secrets
 from pathlib import Path
 from typing import Mapping
 
@@ -17,6 +18,7 @@ def create_app() -> Flask:
     app = Flask(__name__)
     app.config.from_mapping(
         DATABASE=os.getenv("DATABASE", str(get_database_path())),
+        COACH_SESSION_GENERATION=secrets.token_hex(16),
         AI_PROVIDER=os.getenv("AI_PROVIDER", "openai").strip().lower(),
         OPENAI_API_KEY=os.getenv("OPENAI_API_KEY"),
         OPENAI_MODEL=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
