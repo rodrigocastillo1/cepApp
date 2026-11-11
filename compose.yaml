@@ -28,6 +28,11 @@ services:
       SECRET_KEY: ${SECRET_KEY:-local-demo-only}
       DATABASE: /data/catalogue.db
       KAFKA_BROKER: kafka://redpanda:9092
+      AI_PROVIDER: ${AI_PROVIDER:-openai}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o-mini}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-3.5-flash-lite}
     ports:
       - "127.0.0.1:5000:5000"
     volumes:
