@@ -11,7 +11,6 @@ from modules.product_data.models import Product
 class _BrandAggregate:
     product_count: int = 0
     scores: list[float] = field(default_factory=list)
-    carbon: list[float] = field(default_factory=list)
 
 
 class AnalyticsService:
@@ -36,8 +35,6 @@ class AnalyticsService:
             assessment = self.scorer.calculate(product)
             if assessment.overall_score is not None:
                 brand.scores.append(assessment.overall_score)
-            if product.carbon_footprint is not None:
-                brand.carbon.append(float(product.carbon_footprint))
 
         return [
             {
@@ -45,11 +42,6 @@ class AnalyticsService:
                 "average_score": (
                     sum(values.scores) / len(values.scores)
                     if values.scores
-                    else None
-                ),
-                "average_carbon": (
-                    sum(values.carbon) / len(values.carbon)
-                    if values.carbon
                     else None
                 ),
                 "product_count": values.product_count,

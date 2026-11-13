@@ -38,8 +38,7 @@
   <article class="panel chart-card">
     <div class="chart-heading">
       <div>
-        <span class="eyebrow">Illustrative values</span>
-        <h2>Average circularity score by demo brand</h2>
+        <h2>Average circularity score by brand</h2>
       </div>
       <span class="chart-unit">Score / 100</span>
     </div>
@@ -55,34 +54,6 @@
     {% else %}
       <p class="chart-note">No product data is available yet.</p>
     {% endfor %}
-    <p class="chart-note">Prototype scores are calculated from available indicator data and are not official assessments.</p>
-  </article>
-
-  <article class="panel chart-card">
-    <div class="chart-heading">
-      <div>
-        <span class="eyebrow">Reported separately</span>
-        <h2>Example carbon footprint by demo brand</h2>
-      </div>
-      <span class="chart-unit">kg CO₂e / model</span>
-    </div>
-    {% set carbon_brands = brands|selectattr("average_carbon", "ne", none)|list %}
-    {% if carbon_brands %}
-      {% set max_carbon = carbon_brands|map(attribute="average_carbon")|max %}
-    {% endif %}
-    {% for brand in brands %}
-      {% if brand.average_carbon is not none %}
-        <div class="bar-row carbon-bar">
-          <div class="bar-label"><span>{{ brand.brand }}</span><strong>{{ "%.0f"|format(brand.average_carbon) }}</strong></div>
-          <div class="bar-track" role="img" aria-label="{{ brand.brand }} illustrative average carbon value {{ "%.0f"|format(brand.average_carbon) }} kilograms CO2 equivalent">
-            <span style="width: {{ ((brand.average_carbon / max_carbon * 100)|round(1)) if max_carbon > 0 else 0 }}%"></span>
-          </div>
-        </div>
-      {% endif %}
-    {% else %}
-      <p class="chart-note">No product data is available yet.</p>
-    {% endfor %}
-    <p class="chart-note">Carbon values are synthetic examples and are not part of the Circularity Score.</p>
   </article>
 </section>
 
