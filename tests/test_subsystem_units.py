@@ -129,7 +129,7 @@ def test_circularity_assessment_averages_dimensions_and_reports_coverage(tmp_pat
     assert assessment.components[0].coverage == pytest.approx(2 / 3)
 
 
-def test_analytics_calculates_brand_score_carbon_and_product_count(tmp_path):
+def test_analytics_calculates_brand_score_and_product_count(tmp_path):
     repository = _repository(tmp_path)
     products = [
         product
@@ -147,7 +147,7 @@ def test_analytics_calculates_brand_score_carbon_and_product_count(tmp_path):
 
     assert brand["product_count"] == 2
     assert brand["average_score"] == pytest.approx(expected_score)
-    assert brand["average_carbon"] == 190
+    assert "average_carbon" not in brand
 
 
 def test_analytics_category_dimension_averages_use_available_scores(tmp_path):
