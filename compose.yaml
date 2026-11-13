@@ -22,7 +22,7 @@ services:
     restart: unless-stopped
 
   web:
-    build: .
+    image: ghcr.io/rodrigocastillo1/cepapp:latest
     command: flask --app app.app:app run --host=0.0.0.0 --port=5000
     environment:
       SECRET_KEY: ${SECRET_KEY:-local-demo-only}
@@ -43,7 +43,7 @@ services:
     restart: unless-stopped
 
   worker:
-    build: .
+    image: ghcr.io/rodrigocastillo1/cepapp:latest
     command: faust -A modules.lifecycle.faust_worker worker -l info
     environment:
       DATABASE: /data/catalogue.db
@@ -56,7 +56,7 @@ services:
     restart: unless-stopped
 
   producer:
-    build: .
+    image: ghcr.io/rodrigocastillo1/cepapp:latest
     command: python -m tools.generate_lifecycle_events
     environment:
       KAFKA_BROKER: redpanda:9092
