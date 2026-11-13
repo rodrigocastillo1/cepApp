@@ -44,6 +44,7 @@ def get_ai_provider() -> AIProvider:
         return OpenAIProvider(
             api_key=current_app.config.get("OPENAI_API_KEY"),
             model=current_app.config["OPENAI_MODEL"],
+            base_url=current_app.config["OPENAI_BASE_URL"],
         )
     if provider_name == "gemini":
         return GeminiProvider(

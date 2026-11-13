@@ -30,7 +30,8 @@ services:
       KAFKA_BROKER: kafka://redpanda:9092
       AI_PROVIDER: ${AI_PROVIDER:-openai}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
-      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o-mini}
+      OPENAI_BASE_URL: ${OPENAI_BASE_URL:-https://chat.kiconnect.nrw/api/v1}
+      OPENAI_MODEL: ${OPENAI_MODEL:-"Qwen3.8 27B"}
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
       GEMINI_MODEL: ${GEMINI_MODEL:-gemini-3.5-flash-lite}
     ports:

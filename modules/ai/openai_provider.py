@@ -14,8 +14,9 @@ class OpenAIProvider(AIProvider):
     def __init__(
         self,
         api_key: str | None,
-        model: str = "gpt-4o-mini",
+        model: str = "Qwen3.8 27B",
         client: Any | None = None,
+        base_url: str | None = None,
     ) -> None:
         if (not api_key or not api_key.strip()) and client is None:
             raise AIProviderNotConfigured(
@@ -33,7 +34,11 @@ class OpenAIProvider(AIProvider):
                 ) from error
 
             self._api_error = APIError
-            client = OpenAI(api_key=api_key.strip(), timeout=30.0)
+            client = OpenAI(
+                api_key=api_key.strip(),
+                base_url=base_url,
+                timeout=120.0,
+            )
         self._client = client
 
     def generate_answer(
