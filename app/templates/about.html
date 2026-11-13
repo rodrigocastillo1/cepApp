@@ -13,10 +13,11 @@
     </p>
     <span class="data-badge badge-light">Capstone Project · Compact Programming Course in Python</span>
   </div>
-  <div class="hero-art" aria-hidden="true">
-    <span class="orbit"></span>
-    <span class="orbit orbit-two"></span>
-    <span class="hero-symbol">↻</span>
+  <div class="hero-art about-hero-art">
+    <span class="orbit" aria-hidden="true"></span>
+    <span class="orbit orbit-two" aria-hidden="true"></span>
+    <img class="institution-logo" src="{{ url_for('static', filename='img/FHDortmundLogo.png') }}" alt="University of Applied Sciences and Arts Dortmund">
+    <img class="hero-symbol about-app-logo" src="{{ url_for('static', filename='img/AppLogo.png') }}" alt="">
   </div>
 </section>
 
@@ -74,5 +75,19 @@
       </tbody>
     </table>
   </div>
+</section>
+
+<section class="content-section" aria-labelledby="visual-credits-title">
+  <div class="section-heading">
+    <div>
+      <span class="eyebrow">Credits</span>
+      <h2 id="visual-credits-title">Icon artwork</h2>
+    </div>
+  </div>
+  <p class="icon-attributions">
+    <a href="https://www.flaticon.com/free-icons/app" title="app icons">App icons created by Magnific - Flaticon</a>
+    <a href="https://www.flaticon.com/free-icons/lesson" title="lesson icons">Lesson icons created by vectorsmarket15 - Flaticon</a>
+    <a href="https://www.flaticon.com/free-icons/chatbot" title="chatbot icons">Chatbot icons created by littleicon - Flaticon</a>
+  </p>
 </section>
 {% endblock %}

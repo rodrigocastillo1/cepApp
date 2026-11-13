@@ -12,7 +12,7 @@
     <a class="skip-link" href="#main-content">Skip to content</a>
     <header class="site-header">
       <a class="brand" href="{{ url_for('main.index') }}" aria-label="EcoPassport home">
-        <span class="brand-mark" aria-hidden="true">↻</span>
+        <img class="brand-mark" src="{{ url_for('static', filename='img/AppLogo.png') }}" alt="">
         <span>
           <strong>EcoPassport</strong>
           <small>Product sustainability explorer</small>
@@ -38,10 +38,6 @@
     </header>
 
     <main id="main-content" class="page-shell">
-      <div class="prototype-notice" role="note">
-        <strong>Educational prototype:</strong> example products and figures are synthetic, not verified claims.
-        This is not an official Digital Product Passport or certification.
-      </div>
       {% block content %}{% endblock %}
     </main>
     <footer class="site-footer">
