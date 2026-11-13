@@ -46,10 +46,9 @@ docker compose version
    cp .env.template .env
    ```
    If you already have a `.env` file, edit it instead of overwriting it.
-2. Open `.env` in a text editor and set `AI_PROVIDER` to `openai` or `gemini`.
+2. Open `.env` in a text editor and set `AI_PROVIDER` to `openai` or `gemini`. Use gemini for a better performance.
 3. Add the selected provider's API key to `OPENAI_API_KEY` or
-   `GEMINI_API_KEY`. Leave the unused provider's key empty. The AI coach needs
-   a valid key; other application features can run without one.
+   `GEMINI_API_KEY`.
 4. Optionally select the model using `OPENAI_MODEL` or `GEMINI_MODEL`. The
    template provides default model names.
 5. Optionally replace the `SECRET_KEY` placeholder with a random value. You can generate

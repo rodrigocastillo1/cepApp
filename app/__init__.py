@@ -21,7 +21,11 @@ def create_app() -> Flask:
         COACH_SESSION_GENERATION=secrets.token_hex(16),
         AI_PROVIDER=os.getenv("AI_PROVIDER", "openai").strip().lower(),
         OPENAI_API_KEY=os.getenv("OPENAI_API_KEY"),
-        OPENAI_MODEL=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
+        OPENAI_BASE_URL=os.getenv(
+            "OPENAI_BASE_URL",
+            "https://chat.kiconnect.nrw/api/v1",
+        ).strip(),
+        OPENAI_MODEL=os.getenv("OPENAI_MODEL", "Qwen3.8 27B"),
         GEMINI_API_KEY=os.getenv("GEMINI_API_KEY"),
         GEMINI_MODEL=os.getenv("GEMINI_MODEL", "gemini-flash-latest"),
     )
